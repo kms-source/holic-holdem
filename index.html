@@ -7,13 +7,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Holic 홀덤 매니저</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       background-color: #090d16;
       color: #f1f5f9;
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      -webkit-tap-highlight-color: transparent;
       overflow-x: hidden;
     }
     * { box-sizing: border-box; }
@@ -31,10 +33,10 @@
     const ADMIN_PIN = '1234';
 
     const KEYS = {
-      regulars: 'holic_reg_v6',
-      selected: 'holic_sel_v6',
-      guests: 'holic_gst_v6',
-      excluded: 'holic_exc_v6'
+      regulars: 'holic_reg_v7',
+      selected: 'holic_sel_v7',
+      guests: 'holic_gst_v7',
+      excluded: 'holic_exc_v7'
     };
 
     function loadArr(key, fallback) {
@@ -70,7 +72,7 @@
       roundTo100: true,
       players: [],
       lastSig: '',
-      copiedText: false,
+      sharedOrCopied: false,
       toast: ''
     };
 
@@ -180,37 +182,83 @@
       const pool = Math.max(0, Number(state.totalPool) || 0);
       const list = state.players.map(p => ({ ...p, loss: Math.max(0, Number(p.loss) || 0) }));
       const totalLoss = list.reduce((s, p) => s + p.loss, 0);
+
       if (totalLoss <= 0) {
-        return { pool, totalLoss: 0, items: list.map(p => ({ ...p, ratio: 0, settled: 0, finalLoss: 0 })) };
+        return {
+          pool,
+          totalLoss: 0,
+          totalSettled: 0,
+          totalFinalLoss: 0,
+          items: list.map(p => ({ ...p, ratio: 0, settled: 0, finalLoss: 0 }))
+        };
       }
+
       const items = list.map(p => {
         const ratio = p.loss / totalLoss;
         const settled = roundAmt(pool * ratio, state.roundTo100);
         const finalLoss = Math.max(0, p.loss - settled);
         return { ...p, ratio, settled, finalLoss };
       });
-      return { pool, totalLoss, items };
+
+      const totalSettled = items.reduce((s, it) => s + it.settled, 0);
+      const totalFinalLoss = items.reduce((s, it) => s + it.finalLoss, 0);
+
+      return { pool, totalLoss, totalSettled, totalFinalLoss, items };
     }
 
-    function copyKakao() {
-      const { pool, totalLoss, items } = calcManjing();
+    function buildShareText() {
+      const { pool, totalLoss, totalSettled, totalFinalLoss, items } = calcManjing();
       const lines = [
         '🃏 [Holic] 홀덤 맨징 정산',
-        '• 총 맨징 금액: ' + fmt(pool) + '원',
-        '• 총 마이너스 합계: ' + fmt(totalLoss) + '원',
+        '• 총 마이너스 금액: -' + fmt(totalLoss) + '원',
+        '• 총 맨징 금액: +' + fmt(totalSettled) + '원 (설정 상금 ' + fmt(pool) + '원)',
+        '• 총 최종 손실 금액: -' + fmt(totalFinalLoss) + '원',
         '• 반올림: ' + (state.roundTo100 ? '100원 단위' : '원 단위'),
         ''
       ];
       items.forEach((it, idx) => {
-        lines.push((idx + 1) + '. ' + it.name + ' - 마이너스 ' + fmt(it.loss) + '원 (' + (it.ratio * 100).toFixed(1) + '%) → 맨징 ' + fmt(it.settled) + '원 / 최종손실 -' + fmt(it.finalLoss) + '원');
+        lines.push(
+          (idx + 1) + '. ' + it.name +
+          ' - 마이너스 ' + fmt(it.loss) + '원 (' + (it.ratio * 100).toFixed(1) + '%)' +
+          ' → 맨징 +' + fmt(it.settled) + '원 / 최종손실 -' + fmt(it.finalLoss) + '원'
+        );
       });
-      const txt = lines.join('\n');
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(() => {
-          state.copiedText = true;
-          notify('카톡 정산 내역 복사 완료');
-          setTimeout(() => { state.copiedText = false; render(); }, 1600);
-        }).catch(() => notify('복사에 실패했습니다.'));
+      return lines.join('\n');
+    }
+
+    async function deliverSettlement() {
+      const txt = buildShareText();
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: 'Holic 홀덤 맨징 정산',
+            text: txt
+          });
+          state.sharedOrCopied = true;
+          notify('내역 전달 완료');
+          setTimeout(() => { state.sharedOrCopied = false; render(); }, 1600);
+          return;
+        }
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(txt);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = txt;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        state.sharedOrCopied = true;
+        notify('내역이 복사되었습니다. 원하는 곳에 붙여넣어 전달하세요!');
+        setTimeout(() => { state.sharedOrCopied = false; render(); }, 1600);
+      } catch (e) {
+        notify('전달에 실패했습니다.');
       }
     }
 
@@ -249,7 +297,7 @@
       syncPlayers(false);
       const att = getAttendees();
       const elig = getEligibleDealerFee();
-      const { pool, totalLoss, items } = calcManjing();
+      const { pool, totalLoss, totalSettled, totalFinalLoss, items } = calcManjing();
       const allKnown = [...new Set([...state.regularMembers, ...state.guestMembers])];
 
       const cardStyle = 'background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:12px;margin-bottom:10px;';
@@ -326,7 +374,7 @@
       } else {
         tabBody = '<div style="' + cardStyle + '">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
-          '<span style="font-size:14px;font-weight:900;color:#fcd34d;">총 맨징 금액</span>' +
+          '<span style="font-size:14px;font-weight:900;color:#fcd34d;">총 맨징 금액 (배분 상금)</span>' +
           '<button type="button" data-act="toggleR100" style="padding:5px 10px;border-radius:999px;border:1px solid ' + (state.roundTo100 ? '#fbbf24' : '#334155') + ';background:' + (state.roundTo100 ? 'rgba(251,191,36,0.2)' : '#1e293b') + ';color:#fde68a;font-size:11px;font-weight:800;cursor:pointer;">' + (state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF') + '</button>' +
           '</div>' +
           '<input id="poolInp" type="text" inputmode="numeric" value="' + fmt(pool) + '" style="' + inputStyle + 'height:44px;text-align:right;font-size:17px;font-weight:900;margin-bottom:8px;" />' +
@@ -336,7 +384,21 @@
           '<button type="button" data-act="addPool" data-amt="100000" style="height:36px;border-radius:8px;border:none;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:800;cursor:pointer;">+10만</button>' +
           '<button type="button" data-act="resetPool" style="height:36px;border-radius:8px;border:1px solid #fb7185;background:rgba(136,19,55,0.5);color:#fecdd3;font-size:12px;font-weight:800;cursor:pointer;">초기화</button>' +
           '</div>' +
-          '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;"><span style="font-weight:900;color:#fff;">참여 멤버 (' + items.length + '명)</span><span style="color:#94a3b8;">총 마이너스 <strong style="color:#fda4af;">' + fmt(totalLoss) + '원</strong></span></div>' +
+          '<div style="background:#060a13;border:1px solid #334155;border-radius:12px;padding:10px;margin-bottom:12px;">' +
+          '<div style="font-size:11px;font-weight:900;color:#fcd34d;margin-bottom:8px;">전체 정산 합계 (' + items.length + '명)</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;text-align:center;">' +
+          '<div style="background:#0f172a;border:1px solid rgba(251,113,133,0.35);border-radius:10px;padding:8px 4px;">' +
+          '<div style="font-size:10px;font-weight:800;color:#fda4af;">총 마이너스</div>' +
+          '<div style="font-size:12px;font-weight:900;color:#fda4af;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">-' + fmt(totalLoss) + '원</div>' +
+          '</div>' +
+          '<div style="background:#0f172a;border:1px solid rgba(52,211,153,0.35);border-radius:10px;padding:8px 4px;">' +
+          '<div style="font-size:10px;font-weight:800;color:#6ee7b7;">총 맨징 금액</div>' +
+          '<div style="font-size:12px;font-weight:900;color:#6ee7b7;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">+' + fmt(totalSettled) + '원</div>' +
+          '</div>' +
+          '<div style="background:#0f172a;border:1px solid rgba(251,191,36,0.35);border-radius:10px;padding:8px 4px;">' +
+          '<div style="font-size:10px;font-weight:800;color:#fde68a;">총 최종 손실</div>' +
+          '<div style="font-size:12px;font-weight:900;color:#fde68a;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">-' + fmt(totalFinalLoss) + '원</div>' +
+          '</div></div></div>' +
           items.map((it, idx) =>
             '<div style="background:#060a13;border:1px solid #1e293b;border-radius:12px;padding:10px;margin-bottom:8px;">' +
             '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;font-weight:900;color:#fff;">' + (idx + 1) + '. ' + it.name + '</span><span style="font-size:11px;font-weight:800;color:#94a3b8;">' + (it.ratio * 100).toFixed(1) + '%</span></div>' +
@@ -350,7 +412,7 @@
             '<div style="background:rgba(244,63,94,0.14);border:1px solid rgba(251,113,133,0.4);border-radius:10px;padding:8px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:11px;font-weight:800;color:#fda4af;">최종 손실</span><span style="font-size:13px;font-weight:900;color:#fda4af;">-' + fmt(it.finalLoss) + '원</span></div>' +
             '</div></div></div>'
           ).join('') +
-          '<button type="button" data-act="copyKakao" style="width:100%;height:44px;border-radius:12px;border:none;background:#fbbf24;color:#060a13;font-size:13px;font-weight:900;cursor:pointer;margin-top:4px;">' + (state.copiedText ? '✓ 복사 완료' : '💬 카톡 내역 복사') + '</button>' +
+          '<button type="button" data-act="deliver" style="width:100%;height:46px;border-radius:12px;border:none;background:#fbbf24;color:#060a13;font-size:14px;font-weight:900;cursor:pointer;margin-top:6px;">' + (state.sharedOrCopied ? '✓ 전달 준비 완료' : '📤 내역 전달하기') + '</button>' +
           '</div>';
       }
 
@@ -473,8 +535,8 @@
             state.totalPool = (Number(state.totalPool) || 0) + (Number(el.getAttribute('data-amt')) || 0); render();
           } else if (act === 'resetPool') {
             state.totalPool = 0; state.players = state.players.map(p => ({ ...p, loss: 0 })); render();
-          } else if (act === 'copyKakao') {
-            copyKakao();
+          } else if (act === 'deliver') {
+            deliverSettlement();
           }
         };
       });
