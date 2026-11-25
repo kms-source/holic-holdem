@@ -2,1230 +2,1044 @@
 <html lang="ko">
 <head>
   <link rel="icon" type="image/png" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>홀덤 맨징 계산기</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Pretendard & Inter Font -->
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holic 홀덤 매니저</title>
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <link rel="stylesheet" as="style" crossorigin href="[https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css](https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css)" />
+  <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Pretendard', 'Inter', 'Noto Sans KR', 'sans-serif'],
+            sans: ['Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
           },
-        },
-      },
-    };
+          colors: {
+            slate: {
+              850: '#172033',
+              920: '#0b1120',
+              950: '#060a13',
+            }
+          }
+        }
+      }
+    }
   </script>
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+    .felt-surface {
+      background: radial-gradient(ellipse at center, #134e3a 0%, #0b3326 68%, #072219 100%);
+      box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.65);
+    }
+    .table-rail {
+      background: linear-gradient(145deg, #272018 0%, #161310 55%, #231c15 100%);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(251, 191, 36, 0.25);
+    }
+  </style>
 </head>
-<body class="bg-[#0f172a] text-slate-100 font-sans antialiased min-h-screen selection:bg-emerald-500/30 selection:text-emerald-200">
-
-  <!-- 메인 앱 컨테이너 -->
-  <div class="max-w-[560px] mx-auto px-4 pt-6 pb-24">
-
-    <!-- 상단 헤더 -->
-    <header class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-950/60 border border-emerald-400/30 shrink-0">
-          <!-- 스페이드 아이콘 -->
-          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2C9 6.5 4 9.5 4 14a4.5 4.5 0 0 0 7.2 3.6c-.2 1.4-.9 2.6-2.2 3.4h6c-1.3-.8-2-2-2.2-3.4A4.5 4.5 0 0 0 20 14c0-4.5-5-7.5-8-12z"/>
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">홀덤 맨징 계산기</h1>
-          <p class="text-xs sm:text-sm text-slate-400 font-medium">손실 비율별 자동 정산 · 100원 단위 반올림</p>
-        </div>
-      </div>
-      <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30 shrink-0">
-        100원 반올림
-      </span>
-    </header>
-
-    <!-- 1. 총 맨징 금액 입력 카드 -->
-    <section class="bg-[#1e293b] border border-slate-700/80 rounded-2xl p-5 mb-5 shadow-xl shadow-black/30">
-      <div class="flex items-center justify-between mb-2.5">
-        <label for="totalPoolInput" class="text-sm font-bold text-slate-200 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-          총 맨징 금액 (배분할 상금)
-        </label>
-        <span class="text-xs text-slate-400">원 단위 입력</span>
-      </div>
-
-      <div class="relative flex items-center">
-        <input
-          id="totalPoolInput"
-          type="text"
-          inputmode="numeric"
-          placeholder="0"
-          autocomplete="off"
-          class="w-full bg-[#0f172a] border-2 border-slate-700 focus:border-amber-400 focus:outline-none rounded-xl pl-4 pr-12 py-3.5 text-right text-2xl sm:text-3xl font-extrabold text-amber-400 placeholder-slate-600 transition-colors"
-        />
-        <span class="absolute right-4 text-lg font-bold text-slate-400 pointer-events-none">원</span>
-      </div>
-
-      <!-- 빠른 금액 추가 버튼 -->
-      <div class="grid grid-cols-4 gap-2 mt-3.5">
-        <button
-          type="button"
-          onclick="addPoolAmount(10000)"
-          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-600/80 text-slate-100 font-bold text-sm transition-all flex items-center justify-center"
-        >
-          +1만
-        </button>
-        <button
-          type="button"
-          onclick="addPoolAmount(50000)"
-          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-600/80 text-slate-100 font-bold text-sm transition-all flex items-center justify-center"
-        >
-          +5만
-        </button>
-        <button
-          type="button"
-          onclick="addPoolAmount(100000)"
-          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-600/80 text-slate-100 font-bold text-sm transition-all flex items-center justify-center"
-        >
-          +10만
-        </button>
-        <button
-          type="button"
-          onclick="clearPoolAmount()"
-          class="min-h-[48px] rounded-xl bg-rose-500/15 hover:bg-rose-500/25 active:scale-[0.97] border border-rose-500/30 text-rose-300 font-bold text-sm transition-all flex items-center justify-center"
-        >
-          초기화
-        </button>
-      </div>
-    </section>
-
-    <!-- 2. 참여 플레이어 및 손실 금액 입력 섹션 -->
-    <section class="mb-5">
-      <div class="flex items-center justify-between mb-3 px-1">
-        <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-          참여 플레이어 &amp; 마이너스 금액
-          <span id="playerCountBadge" class="ml-1 px-2.5 py-0.5 text-xs font-bold rounded-full bg-[#1e293b] text-emerald-400 border border-slate-700">3명</span>
-        </h2>
-        <span class="text-xs text-slate-400">입력 시 즉시 계산</span>
-      </div>
-
-      <!-- 플레이어 카드 리스트 -->
-      <div id="playerList" class="space-y-3"></div>
-
-      <!-- 플레이어 추가 버튼 -->
-      <button
-        type="button"
-        id="addPlayerBtn"
-        class="mt-3.5 w-full min-h-[54px] rounded-2xl bg-[#1e293b] hover:bg-slate-800 active:scale-[0.99] border-2 border-dashed border-slate-600 hover:border-emerald-400 text-emerald-400 font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        플레이어 추가
-      </button>
-    </section>
-
-    <!-- 3. 정산 요약 카드 -->
-    <section class="bg-[#1e293b] border border-slate-700/80 rounded-2xl p-5 mb-5 shadow-xl shadow-black/30">
-      <h2 class="text-sm font-bold text-slate-300 mb-3.5 flex items-center gap-2">
-        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        정산 요약
-      </h2>
-
-      <div class="grid grid-cols-3 gap-2.5">
-        <!-- 총 마이너스 금액 -->
-        <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-3">
-          <p class="text-[11px] font-medium text-slate-400 mb-1">총 마이너스</p>
-          <p id="totalLossDisplay" class="text-sm sm:text-base font-extrabold text-rose-400 tracking-tight truncate">0원</p>
-        </div>
-
-        <!-- 총 맨징 금액 -->
-        <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-3">
-          <p class="text-[11px] font-medium text-slate-400 mb-1">총 맨징 금액</p>
-          <p id="totalPoolDisplay" class="text-sm sm:text-base font-extrabold text-amber-400 tracking-tight truncate">0원</p>
-        </div>
-
-        <!-- 실제 배분 합계 -->
-        <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-3">
-          <p class="text-[11px] font-medium text-slate-400 mb-1">실제 배분 합계</p>
-          <p id="totalPayoutDisplay" class="text-sm sm:text-base font-extrabold text-emerald-400 tracking-tight truncate">0원</p>
-        </div>
-      </div>
-
-      <!-- 100원 단위 반올림 차액 알림 배지 -->
-      <div id="roundingDiffBox" class="hidden mt-3 px-3.5 py-2.5 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 text-xs sm:text-sm font-semibold text-amber-300">
-          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span id="roundingDiffText">100원 단위 반올림 차액: 0원</span>
-        </div>
-        <span class="text-[11px] text-amber-200/70 shrink-0">배분합 - 총액</span>
-      </div>
-    </section>
-
-    <!-- 4. 하단 메인 액션 버튼 -->
-    <section class="space-y-3">
-      <div class="grid grid-cols-2 gap-3">
-        <!-- 텍스트 복사 버튼 -->
-        <button
-          type="button"
-          id="copyResultBtn"
-          class="min-h-[58px] rounded-2xl bg-[#1e293b] hover:bg-slate-700/90 active:scale-[0.98] border-2 border-emerald-500/60 hover:border-emerald-400 text-emerald-300 font-extrabold text-base shadow-lg shadow-black/30 transition-all flex items-center justify-center gap-2 px-3"
-        >
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-          </svg>
-          <span>텍스트 복사</span>
-        </button>
-
-        <!-- 이미지로 저장 버튼 -->
-        <button
-          type="button"
-          id="saveImageBtn"
-          class="min-h-[58px] rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-extrabold text-base shadow-lg shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 px-3"
-        >
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span>이미지로 저장</span>
-        </button>
-      </div>
-
-      <!-- 전체 초기화 버튼 -->
-      <button
-        type="button"
-        id="resetAllBtn"
-        class="w-full min-h-[50px] rounded-2xl bg-[#1e293b]/80 hover:bg-rose-500/20 active:scale-[0.99] border border-slate-700 hover:border-rose-500/40 text-slate-300 hover:text-rose-300 font-bold text-sm transition-all flex items-center justify-center gap-2"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
-        전체 초기화
-      </button>
-    </section>
-
-  </div>
-
-  <!-- 커스텀 초기화 확인 모달 -->
-  <div id="resetModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm px-4">
-    <div class="bg-[#1e293b] border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-      <h3 class="text-lg font-extrabold text-white mb-2">전체 초기화할까요?</h3>
-      <p class="text-sm text-slate-300 mb-6">입력한 총 맨징 금액과 모든 플레이어의 손실 금액이 처음 상태로 돌아갑니다.</p>
-      <div class="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          id="cancelResetBtn"
-          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-sm transition-colors"
-        >
-          취소
-        </button>
-        <button
-          type="button"
-          id="confirmResetBtn"
-          class="min-h-[48px] rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-sm transition-colors"
-        >
-          초기화 실행
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 수동 복사 폴백 모달 (자동 복사가 브라우저 보안으로 차단될 경우 표시) -->
-  <div id="manualCopyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm px-4">
-    <div class="bg-[#1e293b] border border-emerald-500/40 rounded-2xl p-5 w-full max-w-md shadow-2xl">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-extrabold text-emerald-400 flex items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          카톡 공유용 결과 텍스트
-        </h3>
-        <button
-          type="button"
-          id="closeManualModalX"
-          aria-label="닫기"
-          class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      <p class="text-xs text-slate-300 mb-3">
-        미리보기 환경의 보안 제한으로 자동 복사가 차단되었습니다. 아래 텍스트를 길게 누르거나 <strong class="text-amber-300">Ctrl+C / Cmd+C</strong>로 복사해 주세요.
-      </p>
-      <textarea
-        id="manualCopyTextarea"
-        readonly
-        rows="10"
-        class="w-full bg-[#0f172a] border border-slate-600 focus:border-emerald-400 focus:outline-none rounded-xl p-3.5 text-sm text-slate-100 font-mono leading-relaxed resize-none mb-4"
-      ></textarea>
-      <div class="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          id="selectAllManualBtn"
-          class="min-h-[48px] rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition-colors"
-        >
-          텍스트 전체 선택
-        </button>
-        <button
-          type="button"
-          id="closeManualModalBtn"
-          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-sm transition-colors"
-        >
-          닫기
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 정산서 이미지 미리보기 및 저장 모달 -->
-  <div id="imagePreviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
-    <div class="bg-[#1e293b] border border-slate-700 rounded-2xl p-5 w-full max-w-md shadow-2xl my-auto">
-      <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-          정산서 이미지 미리보기
-        </h3>
-        <button
-          type="button"
-          id="closeImageModalX"
-          aria-label="닫기"
-          class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- 생성된 고화질 PNG 이미지 영역 -->
-      <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-2 mb-3 max-h-[60vh] overflow-y-auto">
-        <img
-          id="generatedImagePreview"
-          src=""
-          alt="홀덤 맨징 정산서"
-          class="w-full h-auto rounded-lg shadow-lg block"
-        />
-      </div>
-
-      <p class="text-xs text-amber-300/90 bg-amber-400/10 border border-amber-400/25 rounded-xl px-3 py-2.5 mb-4 leading-relaxed">
-        💡 모바일이나 미리보기에서는 위 이미지를 <strong>길게 눌러</strong> 바로 저장하거나 카톡으로 공유할 수 있어요.
-      </p>
-
-      <div class="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          id="downloadImageAgainBtn"
-          class="min-h-[48px] rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-extrabold text-sm transition-all flex items-center justify-center gap-1.5"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-          </svg>
-          PNG 다운로드
-        </button>
-        <button
-          type="button"
-          id="closeImageModalBtn"
-          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-sm transition-colors"
-        >
-          닫기
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 토스트 알림 메시지 -->
-  <div
-    id="toast"
-    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 rounded-2xl bg-slate-900/95 border border-emerald-400/50 text-emerald-300 font-bold text-sm shadow-2xl flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300 translate-y-3 whitespace-nowrap"
-  >
-    <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-    <span id="toastMessage">카톡 공유용 결과가 복사되었습니다!</span>
-  </div>
+<body class="min-h-screen antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+  <div id="app" class="max-w-xl mx-auto px-4 py-6 pb-20"></div>
 
   <script>
-    // =========================================================================
-    // 상태 관리 (State)
-    // =========================================================================
-    let totalPool = 0; // 총 맨징 금액
-    let nextPlayerId = 1;
-    let players = []; // { id, name, loss }
-    let toastTimer = null;
+    const DEFAULT_REGULAR_MEMBERS = [
+      '민석', '민겸', '서이', '진겸', '윤범', '민중', '주광', '동준', '미림',
+      '중훈', '나윤', '재호', '한빈', '선수', '태현', '윤아', '영모'
+    ];
 
-    // DOM 요소 참조
-    const totalPoolInput = document.getElementById('totalPoolInput');
-    const playerListEl = document.getElementById('playerList');
-    const playerCountBadge = document.getElementById('playerCountBadge');
-    const totalLossDisplay = document.getElementById('totalLossDisplay');
-    const totalPoolDisplay = document.getElementById('totalPoolDisplay');
-    const totalPayoutDisplay = document.getElementById('totalPayoutDisplay');
-    const roundingDiffBox = document.getElementById('roundingDiffBox');
-    const roundingDiffText = document.getElementById('roundingDiffText');
-    const addPlayerBtn = document.getElementById('addPlayerBtn');
-    const copyResultBtn = document.getElementById('copyResultBtn');
-    const saveImageBtn = document.getElementById('saveImageBtn');
-    const resetAllBtn = document.getElementById('resetAllBtn');
+    const STORAGE_KEYS = {
+      regulars: 'holic_regular_members_v1',
+      selected: 'holic_selected_members_v1',
+      guests: 'holic_guest_members_v1'
+    };
 
-    // 모달 요소
-    const resetModal = document.getElementById('resetModal');
-    const cancelResetBtn = document.getElementById('cancelResetBtn');
-    const confirmResetBtn = document.getElementById('confirmResetBtn');
-    const manualCopyModal = document.getElementById('manualCopyModal');
-    const manualCopyTextarea = document.getElementById('manualCopyTextarea');
-    const selectAllManualBtn = document.getElementById('selectAllManualBtn');
-    const closeManualModalBtn = document.getElementById('closeManualModalBtn');
-    const closeManualModalX = document.getElementById('closeManualModalX');
+    function loadJSON(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
 
-    // 이미지 미리보기 모달 요소
-    const imagePreviewModal = document.getElementById('imagePreviewModal');
-    const generatedImagePreview = document.getElementById('generatedImagePreview');
-    const downloadImageAgainBtn = document.getElementById('downloadImageAgainBtn');
-    const closeImageModalBtn = document.getElementById('closeImageModalBtn');
-    const closeImageModalX = document.getElementById('closeImageModalX');
-    let lastGeneratedImageUrl = '';
-    let lastGeneratedFilename = '홀덤_맨징정산.png';
+    function saveJSON(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch {}
+    }
 
-    // 토스트 요소
-    const toastEl = document.getElementById('toast');
-    const toastMessageEl = document.getElementById('toastMessage');
+    const state = {
+      activeTab: 'seats', // 'seats' | 'dealerFee' | 'manjing'
+      regularMembers: loadJSON(STORAGE_KEYS.regulars, DEFAULT_REGULAR_MEMBERS),
+      guestMembers: loadJSON(STORAGE_KEYS.guests, []),
+      selectedMembers: loadJSON(STORAGE_KEYS.selected, ['민석', '민겸', '서이', '진겸', '중훈', '나윤']),
+      newRegularInput: '',
+      newGuestInput: '',
 
-    // =========================================================================
-    // 유틸리티 함수
-    // =========================================================================
+      // 자리뽑기 상태
+      dealerMode: 'random', // 'random' | 'manual'
+      manualDealer: '',
+      dealerName: '',
+      seatAssignments: [], // [{ seatLabel: 'D' | '1번' ..., name: '', isDealer: bool }]
 
-    function parseAmount(value) {
-      if (!value) return 0;
-      const digitsOnly = String(value).replace(/[^0-9]/g, '');
-      const parsed = parseInt(digitsOnly, 10);
-      return isNaN(parsed) ? 0 : parsed;
+      // 딜러비 추첨 상태 (회차 누적 없이 추첨 후 종료)
+      dealerFeeWinners: [],
+      dealerFeeDone: false,
+
+      // 맨징 계산기 상태
+      totalPool: 0,
+      roundTo100: true,
+      players: [],
+      lastSyncedSignature: '',
+      copiedText: false,
+      exportingImage: false,
+      statusMessage: ''
+    };
+
+    function getAllAttendees() {
+      const combined = [...state.selectedMembers, ...state.guestMembers];
+      return [...new Set(combined)].filter(name => name && name.trim());
+    }
+
+    function syncManjingPlayers(force = false) {
+      const attendees = getAllAttendees();
+      const signature = attendees.join('|');
+      if (!force && signature === state.lastSyncedSignature && state.players.length === attendees.length) {
+        return;
+      }
+      const existingMap = new Map(state.players.map(p => [p.name, p]));
+      state.players = attendees.map((name, idx) => {
+        const prev = existingMap.get(name);
+        return {
+          id: prev ? prev.id : idx + 1,
+          name,
+          loss: prev ? prev.loss : 0
+        };
+      });
+      state.lastSyncedSignature = signature;
     }
 
     function formatNumber(num) {
-      return Number(num || 0).toLocaleString('ko-KR');
+      const n = Number(num) || 0;
+      return n.toLocaleString('ko-KR');
     }
 
-    function escapeHtml(str) {
-      return String(str || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+    function parseDigits(val) {
+      const cleaned = String(val || '').replace(/[^0-9]/g, '');
+      return cleaned ? parseInt(cleaned, 10) : 0;
     }
 
-    function showToast(message) {
-      toastMessageEl.textContent = message;
-      toastEl.classList.remove('opacity-0', 'translate-y-3', 'pointer-events-none');
-      toastEl.classList.add('opacity-100', 'translate-y-0');
-
-      if (toastTimer) clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        toastEl.classList.add('opacity-0', 'translate-y-3', 'pointer-events-none');
-        toastEl.classList.remove('opacity-100', 'translate-y-0');
-      }, 2500);
+    function roundSettlement(amount, roundTo100) {
+      if (!roundTo100) return Math.round(amount);
+      return Math.round(amount / 100) * 100;
     }
 
-    // =========================================================================
-    // 핵심 계산 로직
-    // =========================================================================
+    function showToast(msg) {
+      state.statusMessage = msg;
+      render();
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        state.statusMessage = '';
+        render();
+      }, 2200);
+    }
 
-    function calculateSettlement() {
-      const totalLoss = players.reduce((sum, p) => sum + p.loss, 0);
-      let totalPayout = 0;
+    function persistMemberState() {
+      saveJSON(STORAGE_KEYS.regulars, state.regularMembers);
+      saveJSON(STORAGE_KEYS.guests, state.guestMembers);
+      saveJSON(STORAGE_KEYS.selected, state.selectedMembers);
+      syncManjingPlayers(true);
 
-      const results = players.map((p, idx) => {
-        let ratio = 0;
-        let payout = 0;
-
-        if (totalLoss > 0 && p.loss > 0) {
-          ratio = (p.loss / totalLoss) * 100;
-          if (totalPool > 0) {
-            const rawPayout = totalPool * (p.loss / totalLoss);
-            // 100원 단위 반올림
-            payout = Math.round(rawPayout / 100) * 100;
-          }
+      // 참석자 변경 시 기존 추첨·자리 결과 정합성 유지
+      const attendees = getAllAttendees();
+      if (state.manualDealer && !attendees.includes(state.manualDealer)) {
+        state.manualDealer = attendees[0] || '';
+      }
+      if (state.seatAssignments.length > 0) {
+        const currentSeatNames = state.seatAssignments.map(s => s.name);
+        const sameSet =
+          currentSeatNames.length === attendees.length &&
+          attendees.every(a => currentSeatNames.includes(a));
+        if (!sameSet) {
+          state.seatAssignments = [];
+          state.dealerName = '';
         }
+      }
+      if (state.dealerFeeWinners.length > 0) {
+        const invalidWinner = state.dealerFeeWinners.some(w => !attendees.includes(w) || w === state.dealerName);
+        if (invalidWinner) {
+          state.dealerFeeWinners = [];
+          state.dealerFeeDone = false;
+        }
+      }
+    }
 
-        totalPayout += payout;
-        const netLoss = p.loss - payout; // 최종 실손실
+    function toggleAttendee(name) {
+      if (state.guestMembers.includes(name)) {
+        state.guestMembers = state.guestMembers.filter(g => g !== name);
+      } else if (state.selectedMembers.includes(name)) {
+        state.selectedMembers = state.selectedMembers.filter(m => m !== name);
+      } else {
+        state.selectedMembers = [...state.selectedMembers, name];
+      }
+      persistMemberState();
+      render();
+    }
 
+    function addRegularMember() {
+      const trimmed = state.newRegularInput.trim();
+      if (!trimmed) return;
+      if (state.regularMembers.includes(trimmed)) {
+        showToast('이미 단골 멤버에 등록된 이름입니다.');
+        return;
+      }
+      state.regularMembers = [...state.regularMembers, trimmed];
+      state.selectedMembers = [...new Set([...state.selectedMembers, trimmed])];
+      state.newRegularInput = '';
+      persistMemberState();
+      showToast(`단골 멤버 '${trimmed}' 추가 완료!`);
+    }
+
+    function addGuestMember() {
+      const trimmed = state.newGuestInput.trim();
+      if (!trimmed) return;
+      const allKnown = [...state.regularMembers, ...state.guestMembers];
+      if (allKnown.includes(trimmed)) {
+        if (!state.selectedMembers.includes(trimmed) && state.regularMembers.includes(trimmed)) {
+          state.selectedMembers = [...state.selectedMembers, trimmed];
+          persistMemberState();
+          showToast(`'${trimmed}' 님을 오늘 참석자에 체크했습니다.`);
+          return;
+        }
+        showToast('이미 참가자 목록에 있는 이름입니다.');
+        return;
+      }
+      state.guestMembers = [...state.guestMembers, trimmed];
+      state.newGuestInput = '';
+      persistMemberState();
+      showToast(`추가 참가자 '${trimmed}' 등록 완료!`);
+    }
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // 딜러 자리 다음 좌석부터 1번, 시계방향 순번 배정
+    function drawSeats() {
+      const attendees = getAllAttendees();
+      if (attendees.length < 2) {
+        showToast('자리뽑기를 하려면 최소 2명 이상 참석해야 합니다.');
+        return;
+      }
+
+      let chosenDealer = '';
+      if (state.dealerMode === 'manual') {
+        chosenDealer = attendees.includes(state.manualDealer) ? state.manualDealer : attendees[0];
+      } else {
+        chosenDealer = attendees[Math.floor(Math.random() * attendees.length)];
+      }
+
+      const others = shuffleArray(attendees.filter(name => name !== chosenDealer));
+      const assignments = [
+        {
+          seatNumber: 0,
+          seatLabel: '딜러 (D)',
+          name: chosenDealer,
+          isDealer: true
+        },
+        ...others.map((name, idx) => ({
+          seatNumber: idx + 1,
+          seatLabel: `${idx + 1}번`,
+          name,
+          isDealer: false
+        }))
+      ];
+
+      state.dealerName = chosenDealer;
+      state.seatAssignments = assignments;
+
+      // 딜러가 바뀌면 기존 딜러비 추첨 결과 초기화
+      state.dealerFeeWinners = [];
+      state.dealerFeeDone = false;
+      render();
+    }
+
+    // 매 라운드 종료 후 딜러 제외 랜덤 2명 추첨 (회차 기록 없이 단발 종료)
+    function drawDealerFeeWinners() {
+      const attendees = getAllAttendees();
+      const eligible = attendees.filter(name => name !== state.dealerName);
+
+      if (eligible.length < 2) {
+        showToast('딜러 제외 대상 인원이 2명 이상이어야 추첨할 수 있습니다.');
+        return;
+      }
+
+      const winners = shuffleArray(eligible).slice(0, 2);
+      state.dealerFeeWinners = winners;
+      state.dealerFeeDone = true;
+      render();
+    }
+
+    function resetDealerFeeRound() {
+      state.dealerFeeWinners = [];
+      state.dealerFeeDone = false;
+      render();
+    }
+
+    function calculateManjing() {
+      const pool = Math.max(0, Number(state.totalPool) || 0);
+      const validPlayers = state.players.map(p => ({
+        ...p,
+        loss: Math.max(0, Number(p.loss) || 0)
+      }));
+      const totalLoss = validPlayers.reduce((sum, p) => sum + p.loss, 0);
+
+      if (totalLoss <= 0) {
         return {
-          id: p.id,
-          displayName: p.name.trim() || `플레이어 ${idx + 1}`,
-          loss: p.loss,
+          pool,
+          totalLoss: 0,
+          items: validPlayers.map(p => ({
+            ...p,
+            ratio: 0,
+            exactAmount: 0,
+            settledAmount: 0
+          }))
+        };
+      }
+
+      const items = validPlayers.map(p => {
+        const ratio = p.loss / totalLoss;
+        const exactAmount = pool * ratio;
+        const settledAmount = roundSettlement(exactAmount, state.roundTo100);
+        return {
+          ...p,
           ratio,
-          payout,
-          netLoss,
+          exactAmount,
+          settledAmount
         };
       });
 
-      const diff = totalPool > 0 && totalLoss > 0 ? totalPayout - totalPool : 0;
-
-      return { totalLoss, totalPayout, diff, results };
+      return { pool, totalLoss, items };
     }
 
-    function updateCalculationsUI() {
-      const { totalLoss, totalPayout, diff, results } = calculateSettlement();
+    function buildKakaoText() {
+      const { pool, totalLoss, items } = calculateManjing();
+      const lines = [
+        `🃏 [Holic] 홀덤 맨징 정산`,
+        `• 총 맨징 금액: ${formatNumber(pool)}원`,
+        `• 총 마이너스 합계: ${formatNumber(totalLoss)}원`,
+        `• 반올림 기준: ${state.roundTo100 ? '100원 단위' : '원 단위'}`,
+        ``
+      ];
 
-      // 각 플레이어 카드 결과 업데이트
-      results.forEach((res) => {
-        const payoutEl = document.getElementById(`payout-${res.id}`);
-        const ratioEl = document.getElementById(`ratio-${res.id}`);
-        const netLossEl = document.getElementById(`netloss-${res.id}`);
-
-        if (payoutEl) {
-          payoutEl.textContent = res.payout > 0 ? `+${formatNumber(res.payout)}원` : '0원';
-          if (res.payout > 0) {
-            payoutEl.classList.remove('text-slate-500');
-            payoutEl.classList.add('text-emerald-400');
-          } else {
-            payoutEl.classList.remove('text-emerald-400');
-            payoutEl.classList.add('text-slate-500');
-          }
-        }
-
-        if (ratioEl) {
-          ratioEl.textContent = `${res.ratio.toFixed(1)}%`;
-          if (res.ratio > 0) {
-            ratioEl.classList.remove('bg-slate-700/60', 'text-slate-400', 'border-slate-600/50');
-            ratioEl.classList.add('bg-amber-400/20', 'text-amber-300', 'border-amber-400/40');
-          } else {
-            ratioEl.classList.remove('bg-amber-400/20', 'text-amber-300', 'border-amber-400/40');
-            ratioEl.classList.add('bg-slate-700/60', 'text-slate-400', 'border-slate-600/50');
-          }
-        }
-
-        if (netLossEl) {
-          if (res.loss === 0) {
-            netLossEl.textContent = '0원';
-            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-slate-500 tracking-tight mt-1 truncate';
-          } else if (res.netLoss > 0) {
-            netLossEl.textContent = `-${formatNumber(res.netLoss)}원`;
-            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-rose-300 tracking-tight mt-1 truncate';
-          } else if (res.netLoss === 0) {
-            netLossEl.textContent = '본전 (0원)';
-            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-emerald-300 tracking-tight mt-1 truncate';
-          } else {
-            netLossEl.textContent = `+${formatNumber(Math.abs(res.netLoss))}원`;
-            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-amber-300 tracking-tight mt-1 truncate';
-          }
-        }
+      items.forEach((item, index) => {
+        const pct = (item.ratio * 100).toFixed(1);
+        lines.push(
+          `${index + 1}. ${item.name} — 마이너스 ${formatNumber(item.loss)}원 (${pct}%) → 맨징 ${formatNumber(item.settledAmount)}원`
+        );
       });
-
-      // 정산 요약 영역 업데이트
-      totalLossDisplay.textContent = totalLoss > 0 ? `-${formatNumber(totalLoss)}원` : '0원';
-      totalPoolDisplay.textContent = `${formatNumber(totalPool)}원`;
-      totalPayoutDisplay.textContent = `${formatNumber(totalPayout)}원`;
-      playerCountBadge.textContent = `${players.length}명`;
-
-      // 반올림 차액 알림
-      if (diff !== 0) {
-        const sign = diff > 0 ? '+' : '-';
-        roundingDiffText.textContent = `100원 단위 반올림 차액: ${sign}${formatNumber(Math.abs(diff))}원`;
-        roundingDiffBox.classList.remove('hidden');
-      } else {
-        roundingDiffBox.classList.add('hidden');
-      }
-    }
-
-    // =========================================================================
-    // 플레이어 카드 렌더링 및 관리
-    // =========================================================================
-
-    function renderPlayers() {
-      playerListEl.innerHTML = '';
-
-      players.forEach((player, index) => {
-        const card = document.createElement('div');
-        card.className = 'bg-[#1e293b] border border-slate-700/80 rounded-2xl p-4 shadow-md transition-all';
-        card.dataset.id = player.id;
-
-        card.innerHTML = `
-          <!-- 상단: 번호 + 이름 입력 + 삭제 버튼 -->
-          <div class="flex items-center justify-between gap-2 mb-3">
-            <div class="flex items-center gap-2.5 flex-1 min-w-0">
-              <span class="w-7 h-7 rounded-lg bg-[#0f172a] border border-slate-700 text-slate-300 font-extrabold text-xs flex items-center justify-center shrink-0">
-                ${index + 1}
-              </span>
-              <input
-                type="text"
-                value="${escapeHtml(player.name)}"
-                placeholder="플레이어 ${index + 1}"
-                data-role="name"
-                data-id="${player.id}"
-                class="w-full bg-transparent border-b border-transparent hover:border-slate-600 focus:border-emerald-400 focus:outline-none py-1 text-base font-bold text-white placeholder-slate-500 transition-colors"
-              />
-            </div>
-            <button
-              type="button"
-              onclick="removePlayer(${player.id})"
-              aria-label="플레이어 삭제"
-              class="w-9 h-9 rounded-xl bg-[#0f172a] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/40 flex items-center justify-center transition-colors shrink-0"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- 중단: 마이너스 금액 입력 (넉넉한 전체 폭) -->
-          <div class="mb-3">
-            <div class="flex items-center justify-between mb-1 px-1">
-              <label class="text-xs font-semibold text-slate-400">마이너스 금액</label>
-              <span class="text-[11px] text-slate-500">잃은 금액 입력</span>
-            </div>
-            <div class="relative flex items-center">
-              <span class="absolute left-3.5 text-base font-extrabold text-rose-400 pointer-events-none">-</span>
-              <input
-                type="text"
-                inputmode="numeric"
-                value="${player.loss > 0 ? formatNumber(player.loss) : ''}"
-                placeholder="0"
-                data-role="loss"
-                data-id="${player.id}"
-                autocomplete="off"
-                class="w-full bg-[#0f172a] border border-slate-700 focus:border-rose-400 focus:outline-none rounded-xl pl-8 pr-10 py-3 text-right text-lg sm:text-xl font-extrabold tabular-nums text-rose-300 placeholder-slate-600 transition-colors"
-              />
-              <span class="absolute right-3.5 text-sm font-bold text-slate-500 pointer-events-none">원</span>
-            </div>
-          </div>
-
-          <!-- 하단: 맨징 금액 & 최종 실손실 (동일 비중 2열 대칭 결과 박스) -->
-          <div class="grid grid-cols-2 gap-2.5">
-            <!-- 좌측: 맨징 금액 + 비율 % -->
-            <div class="bg-[#0f172a] border border-emerald-500/25 rounded-xl px-3.5 py-3 flex flex-col justify-between">
-              <div class="flex items-center justify-between gap-1">
-                <span class="text-xs font-bold text-slate-300">맨징 금액</span>
-                <span
-                  id="ratio-${player.id}"
-                  class="px-2 py-0.5 rounded-md text-[11px] font-extrabold tabular-nums border bg-slate-700/60 text-slate-400 border-slate-600/50 shrink-0"
-                >
-                  0.0%
-                </span>
-              </div>
-              <div id="payout-${player.id}" class="text-xl sm:text-[22px] font-extrabold tabular-nums text-slate-500 tracking-tight mt-1 truncate">
-                0원
-              </div>
-            </div>
-
-            <!-- 우측: 최종 실손실 -->
-            <div class="bg-[#0f172a] border border-rose-400/25 rounded-xl px-3.5 py-3 flex flex-col justify-between">
-              <div class="flex items-center justify-between gap-1">
-                <span class="text-xs font-bold text-slate-300">최종 실손실</span>
-                <span class="text-[10px] font-semibold text-slate-500 shrink-0">정산 후</span>
-              </div>
-              <div id="netloss-${player.id}" class="text-xl sm:text-[22px] font-extrabold tabular-nums text-slate-500 tracking-tight mt-1 truncate">
-                0원
-              </div>
-            </div>
-          </div>
-        `;
-
-        playerListEl.appendChild(card);
-      });
-
-      // 입력 이벤트 바인딩
-      playerListEl.querySelectorAll('input[data-role="name"]').forEach((input) => {
-        input.addEventListener('input', (e) => {
-          const id = Number(e.target.dataset.id);
-          const target = players.find((p) => p.id === id);
-          if (target) target.name = e.target.value;
-        });
-      });
-
-      playerListEl.querySelectorAll('input[data-role="loss"]').forEach((input) => {
-        input.addEventListener('input', (e) => {
-          const id = Number(e.target.dataset.id);
-          const amount = parseAmount(e.target.value);
-          const target = players.find((p) => p.id === id);
-          if (target) {
-            target.loss = amount;
-            e.target.value = amount > 0 ? formatNumber(amount) : '';
-            updateCalculationsUI();
-          }
-        });
-      });
-
-      updateCalculationsUI();
-    }
-
-    function addPlayer(focusNew = true) {
-      const newId = nextPlayerId++;
-      players.push({ id: newId, name: '', loss: 0 });
-      renderPlayers();
-
-      if (focusNew) {
-        const newInput = playerListEl.querySelector(`input[data-role="name"][data-id="${newId}"]`);
-        if (newInput) newInput.focus();
-      }
-    }
-
-    function removePlayer(id) {
-      if (players.length <= 1) {
-        players[0].name = '';
-        players[0].loss = 0;
-        renderPlayers();
-        showToast('최소 1명의 플레이어가 필요합니다. 내용만 비웠습니다.');
-        return;
-      }
-      players = players.filter((p) => p.id !== id);
-      renderPlayers();
-    }
-
-    // =========================================================================
-    // 총 맨징 금액 컨트롤
-    // =========================================================================
-
-    function addPoolAmount(amount) {
-      totalPool += amount;
-      totalPoolInput.value = totalPool > 0 ? formatNumber(totalPool) : '';
-      updateCalculationsUI();
-    }
-
-    function clearPoolAmount() {
-      totalPool = 0;
-      totalPoolInput.value = '';
-      updateCalculationsUI();
-    }
-
-    totalPoolInput.addEventListener('input', (e) => {
-      totalPool = parseAmount(e.target.value);
-      e.target.value = totalPool > 0 ? formatNumber(totalPool) : '';
-      updateCalculationsUI();
-    });
-
-    // =========================================================================
-    // 3단계 안전 복사 핸들러 (카톡 공유용)
-    // =========================================================================
-
-    function buildKakaoSummaryText() {
-      const { totalLoss, totalPayout, diff, results } = calculateSettlement();
-      const activePlayers = results.filter((r) => r.loss > 0 || r.payout > 0);
-      const targetList = activePlayers.length > 0 ? activePlayers : results;
-
-      const lines = [];
-      lines.push('♠️ [홀덤 맨징 정산 결과] ♠️');
-      lines.push(`• 총 맨징 금액: ${formatNumber(totalPool)}원`);
-      lines.push(`• 총 마이너스 금액: -${formatNumber(totalLoss)}원`);
-      lines.push('---------------------------');
-
-      targetList.forEach((p, idx) => {
-        let netText = '본전 (0원)';
-        if (p.netLoss > 0) netText = `-${formatNumber(p.netLoss)}원`;
-        else if (p.netLoss < 0) netText = `+${formatNumber(Math.abs(p.netLoss))}원`;
-
-        lines.push(`${idx + 1}. ${p.displayName}`);
-        lines.push(`   • 손실: -${formatNumber(p.loss)}원 (${p.ratio.toFixed(1)}%)`);
-        lines.push(`   • 맨징: +${formatNumber(p.payout)}원`);
-        lines.push(`   • 최종 실손실: ${netText}`);
-      });
-
-      lines.push('---------------------------');
-      lines.push(`• 실제 배분 합계: ${formatNumber(totalPayout)}원`);
-      if (diff !== 0) {
-        const sign = diff > 0 ? '+' : '-';
-        lines.push(`※ 100원 반올림 차액: ${sign}${formatNumber(Math.abs(diff))}원`);
-      }
 
       return lines.join('\n');
     }
 
-    function openManualCopyModal(text) {
-      manualCopyTextarea.value = text;
-      manualCopyModal.classList.remove('hidden');
-      manualCopyModal.classList.add('flex');
-      setTimeout(() => {
-        manualCopyTextarea.focus();
-        manualCopyTextarea.select();
-      }, 50);
-    }
-
-    function closeManualCopyModal() {
-      manualCopyModal.classList.add('hidden');
-      manualCopyModal.classList.remove('flex');
-    }
-
-    /**
-     * 1단계: navigator.clipboard.writeText 시도
-     * 2단계: 실패 시 임시 textarea + document.execCommand('copy') 폴백
-     * 3단계: 둘 다 차단되면 수동 복사 모달 오픈 (텍스트 자동 선택)
-     */
-    async function copySettlementResult() {
-      const { totalLoss } = calculateSettlement();
-      if (totalPool === 0 && totalLoss === 0) {
-        showToast('먼저 총 맨징 금액과 마이너스 금액을 입력해 주세요!');
-        return;
-      }
-
-      const textToCopy = buildKakaoSummaryText();
-      let copied = false;
-
-      // [1단계] Clipboard API 시도
-      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-        try {
-          await navigator.clipboard.writeText(textToCopy);
-          copied = true;
-        } catch (err) {
-          copied = false;
-        }
-      }
-
-      // [2단계] execCommand('copy') 폴백 시도
-      if (!copied) {
-        try {
-          const textarea = document.createElement('textarea');
-          textarea.value = textToCopy;
-          textarea.setAttribute('readonly', '');
-          textarea.style.position = 'fixed';
-          textarea.style.top = '0';
-          textarea.style.left = '0';
-          textarea.style.opacity = '0';
-          document.body.appendChild(textarea);
-          textarea.focus();
-          textarea.select();
-          textarea.setSelectionRange(0, textToCopy.length);
-          copied = document.execCommand('copy');
-          document.body.removeChild(textarea);
-        } catch (err) {
-          copied = false;
-        }
-      }
-
-      // [결과 처리] 성공 시 토스트 알림, 실패 시 3단계 수동 복사 모달 표시
-      if (copied) {
-        showToast('카톡 공유용 결과가 복사되었습니다!');
-      } else {
-        openManualCopyModal(textToCopy);
-      }
-    }
-
-    // =========================================================================
-    // 네이티브 HTML5 Canvas 고화질(2x) 정산서 이미지 생성 및 다운로드
-    // =========================================================================
-
-    function drawRoundedRect(ctx, x, y, width, height, radius) {
-      const r = Math.min(radius, width / 2, height / 2);
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.arcTo(x + width, y, x + width, y + height, r);
-      ctx.arcTo(x + width, y + height, x, y + height, r);
-      ctx.arcTo(x, y + height, x, y, r);
-      ctx.arcTo(x, y, x + width, y, r);
-      ctx.closePath();
-    }
-
-    function getFormattedDateTime() {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const hh = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      return {
-        display: `${yyyy}.${mm}.${dd} ${hh}:${min}`,
-        fileDate: `${yyyy}${mm}${dd}`,
-      };
-    }
-
-    function triggerPngDownload(dataUrl, filename) {
+    async function copySettlementText() {
+      const text = buildKakaoText();
       try {
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (err) {
-        // 샌드박스 환경에서 다운로드가 제한되어도 미리보기 모달로 저장 가능
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        state.copiedText = true;
+        render();
+        showToast('카카오톡용 정산 내역이 복사되었습니다!');
+        setTimeout(() => {
+          state.copiedText = false;
+          render();
+        }, 2000);
+      } catch {
+        showToast('복사에 실패했습니다. 다시 시도해 주세요.');
       }
     }
 
-    function openImagePreviewModal(dataUrl, filename) {
-      lastGeneratedImageUrl = dataUrl;
-      lastGeneratedFilename = filename;
-      generatedImagePreview.src = dataUrl;
-      imagePreviewModal.classList.remove('hidden');
-      imagePreviewModal.classList.add('flex');
-    }
+    function exportSettlementPng() {
+      state.exportingImage = true;
+      render();
 
-    function closeImagePreviewModal() {
-      imagePreviewModal.classList.add('hidden');
-      imagePreviewModal.classList.remove('flex');
-    }
-
-    function generateSettlementImage() {
-      const { totalLoss, totalPayout, diff, results } = calculateSettlement();
-      if (totalPool === 0 && totalLoss === 0) {
-        showToast('먼저 총 맨징 금액과 마이너스 금액을 입력해 주세요!');
-        return;
-      }
-
-      const activePlayers = results.filter((r) => r.loss > 0 || r.payout > 0);
-      const targetList = activePlayers.length > 0 ? activePlayers : results;
-      const { display: dateText, fileDate } = getFormattedDateTime();
-
-      // 캔버스 레이아웃 치수 계산 (2x Retina)
-      const scale = 2;
-      const width = 720;
-      const padX = 36;
-      const contentW = width - padX * 2;
-      const headerH = 110;
-      const summaryH = diff !== 0 ? 182 : 134;
-      const sectionLabelH = 44;
-      const cardH = 132;
-      const cardGap = 14;
-      const playersBlockH = targetList.length * cardH + Math.max(0, targetList.length - 1) * cardGap;
-      const footerH = 64;
-      const height = headerH + summaryH + sectionLabelH + playersBlockH + footerH + 36;
+      const { pool, totalLoss, items } = calculateManjing();
+      const width = 900;
+      const rowHeight = 76;
+      const height = 260 + Math.max(items.length, 1) * rowHeight;
 
       const canvas = document.createElement('canvas');
-      canvas.width = width * scale;
-      canvas.height = height * scale;
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext('2d');
-      ctx.scale(scale, scale);
 
-      const fontFamily = '"Pretendard", "Noto Sans KR", "Inter", -apple-system, BlinkMacSystemFont, sans-serif';
-
-      // 1. 배경 (딥 슬레이트)
-      ctx.fillStyle = '#0f172a';
+      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+      bgGrad.addColorStop(0, '#090d16');
+      bgGrad.addColorStop(1, '#111827');
+      ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // 상단 포인트 그라데이션 바
-      const topBarGrad = ctx.createLinearGradient(0, 0, width, 0);
-      topBarGrad.addColorStop(0, '#10b981');
-      topBarGrad.addColorStop(0.55, '#14b8a6');
-      topBarGrad.addColorStop(1, '#fbbf24');
-      ctx.fillStyle = topBarGrad;
-      ctx.fillRect(0, 0, width, 8);
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(24, 24, width - 48, height - 48);
 
-      // 2. 헤더 영역
-      let y = 42;
-      // 스페이드 배지
-      drawRoundedRect(ctx, padX, y, 52, 52, 14);
-      const badgeGrad = ctx.createLinearGradient(padX, y, padX + 52, y + 52);
-      badgeGrad.addColorStop(0, '#10b981');
-      badgeGrad.addColorStop(1, '#0d9488');
-      ctx.fillStyle = badgeGrad;
-      ctx.fill();
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 34px Pretendard, sans-serif';
+      ctx.fillText('Holic 홀덤 맨징 정산표', 56, 86);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `800 26px ${fontFamily}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('♠', padX + 26, y + 27);
-
-      // 타이틀 & 날짜
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'top';
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `800 28px ${fontFamily}`;
-      ctx.fillText('홀덤 맨징 정산서', padX + 68, y + 2);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = `500 15px ${fontFamily}`;
-      ctx.fillText(`손실 비율별 자동 정산 · 100원 단위 반올림`, padX + 68, y + 36);
-
-      // 우측 날짜 표시
-      ctx.textAlign = 'right';
       ctx.fillStyle = '#cbd5e1';
-      ctx.font = `600 15px ${fontFamily}`;
-      ctx.fillText(dateText, width - padX, y + 10);
+      ctx.font = '22px Pretendard, sans-serif';
+      ctx.fillText(
+        `총 맨징: ${formatNumber(pool)}원   |   총 마이너스: ${formatNumber(totalLoss)}원   |   ${state.roundTo100 ? '100원 반올림' : '원 단위'}`,
+        56,
+        132
+      );
 
-      // 100원 반올림 배지
-      drawRoundedRect(ctx, width - padX - 104, y + 33, 104, 26, 13);
-      ctx.fillStyle = 'rgba(251, 191, 36, 0.14)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#fcd34d';
-      ctx.font = `700 12px ${fontFamily}`;
-      ctx.fillText('100원 반올림', width - padX - 52, y + 46);
-
-      // 3. 정산 요약 카드
-      y = headerH + 14;
-      drawRoundedRect(ctx, padX, y, contentW, summaryH, 20);
-      ctx.fillStyle = '#1e293b';
-      ctx.fill();
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(56, 162);
+      ctx.lineTo(width - 56, 162);
       ctx.stroke();
 
-      const boxGap = 12;
-      const boxW = (contentW - 36 - boxGap * 2) / 3;
-      const boxY = y + 18;
-      const boxH = 98;
-      const summaryItems = [
-        { label: '총 마이너스', value: totalLoss > 0 ? `-${formatNumber(totalLoss)}원` : '0원', color: '#fb7185' },
-        { label: '총 맨징 금액', value: `${formatNumber(totalPool)}원`, color: '#fbbf24' },
-        { label: '실제 배분 합계', value: `${formatNumber(totalPayout)}원`, color: '#34d399' },
-      ];
+      items.forEach((item, idx) => {
+        const y = 212 + idx * rowHeight;
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.72)';
+        ctx.fillRect(56, y - 34, width - 112, 58);
 
-      summaryItems.forEach((item, idx) => {
-        const bx = padX + 18 + idx * (boxW + boxGap);
-        drawRoundedRect(ctx, bx, boxY, boxW, boxH, 14);
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 24px Pretendard, sans-serif';
+        ctx.fillText(`${idx + 1}. ${item.name}`, 76, y + 3);
 
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
         ctx.fillStyle = '#94a3b8';
-        ctx.font = `600 14px ${fontFamily}`;
-        ctx.fillText(item.label, bx + 16, boxY + 18);
+        ctx.font = '20px Pretendard, sans-serif';
+        ctx.fillText(`-${formatNumber(item.loss)}원 (${(item.ratio * 100).toFixed(1)}%)`, 280, y + 3);
 
-        ctx.fillStyle = item.color;
-        ctx.font = `800 22px ${fontFamily}`;
-        ctx.fillText(item.value, bx + 16, boxY + 50);
-      });
-
-      // 반올림 차액 알림 배지 (차액이 있을 때만)
-      if (diff !== 0) {
-        const diffY = boxY + boxH + 14;
-        drawRoundedRect(ctx, padX + 18, diffY, contentW - 36, 38, 10);
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        const sign = diff > 0 ? '+' : '-';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#fcd34d';
-        ctx.font = `700 14px ${fontFamily}`;
-        ctx.fillText(`※ 100원 단위 반올림 차액: ${sign}${formatNumber(Math.abs(diff))}원 (배분합 - 총액)`, padX + 32, diffY + 19);
-      }
-
-      // 4. 플레이어별 정산 내역 섹션 헤더
-      y += summaryH + 26;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = `800 18px ${fontFamily}`;
-      ctx.fillText(`플레이어별 정산 내역 (${targetList.length}명)`, padX + 4, y + 6);
-
-      // 5. 플레이어 카드 리스트
-      y += 28;
-      targetList.forEach((p, idx) => {
-        // 카드 배경
-        drawRoundedRect(ctx, padX, y, contentW, cardH, 18);
-        ctx.fillStyle = '#1e293b';
-        ctx.fill();
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 1.2;
-        ctx.stroke();
-
-        // 상단 행: 순번 배지 + 이름 + (우측) 손실 금액 & 비율 %
-        drawRoundedRect(ctx, padX + 18, y + 15, 28, 28, 8);
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#cbd5e1';
-        ctx.font = `800 13px ${fontFamily}`;
-        ctx.fillText(String(idx + 1), padX + 32, y + 29);
-
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `800 19px ${fontFamily}`;
-        ctx.fillText(p.displayName, padX + 56, y + 29);
-
-        // 우측 비율 배지
-        const ratioLabel = `${p.ratio.toFixed(1)}%`;
-        ctx.font = `800 13px ${fontFamily}`;
-        const pillW = Math.max(60, ctx.measureText(ratioLabel).width + 20);
-        const pillX = padX + contentW - 18 - pillW;
-        drawRoundedRect(ctx, pillX, y + 16, pillW, 26, 8);
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.18)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fcd34d';
-        ctx.fillText(ratioLabel, pillX + pillW / 2, y + 29);
-
-        // 비율 배지 좌측에 원래 마이너스 금액 표시
-        ctx.textAlign = 'right';
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `600 15px ${fontFamily}`;
-        ctx.fillText(`손실 -${formatNumber(p.loss)}원`, pillX - 12, y + 29);
-
-        // 하단 행: 균형 잡힌 2열 결과 박스 (맨징 금액 vs 최종 실손실)
-        const subY = y + 54;
-        const subH = 62;
-        const subW = (contentW - 36 - 12) / 2;
-
-        // 좌측: 맨징 금액 박스
-        drawRoundedRect(ctx, padX + 18, subY, subW, subH, 12);
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `700 13px ${fontFamily}`;
-        ctx.fillText('맨징 금액', padX + 34, subY + 31);
-
-        ctx.textAlign = 'right';
         ctx.fillStyle = '#34d399';
-        ctx.font = `800 23px ${fontFamily}`;
-        ctx.fillText(`+${formatNumber(p.payout)}원`, padX + 18 + subW - 16, subY + 31);
-
-        // 우측: 최종 실손실 박스
-        const rightBoxX = padX + 18 + subW + 12;
-        drawRoundedRect(ctx, rightBoxX, subY, subW, subH, 12);
-        ctx.fillStyle = '#0f172a';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(251, 113, 133, 0.35)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = `700 13px ${fontFamily}`;
-        ctx.fillText('최종 실손실', rightBoxX + 16, subY + 31);
-
-        let netDisplay = '본전 (0원)';
-        let netColor = '#6ee7b7';
-        if (p.netLoss > 0) {
-          netDisplay = `-${formatNumber(p.netLoss)}원`;
-          netColor = '#fda4af';
-        } else if (p.netLoss < 0) {
-          netDisplay = `+${formatNumber(Math.abs(p.netLoss))}원`;
-          netColor = '#fcd34d';
-        }
-
+        ctx.font = 'bold 25px Pretendard, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillStyle = netColor;
-        ctx.font = `800 23px ${fontFamily}`;
-        ctx.fillText(netDisplay, rightBoxX + subW - 16, subY + 31);
-
-        y += cardH + cardGap;
+        ctx.fillText(`+${formatNumber(item.settledAmount)}원`, width - 76, y + 3);
+        ctx.textAlign = 'left';
       });
 
-      // 6. 하단 푸터
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#64748b';
-      ctx.font = `500 13px ${fontFamily}`;
-      ctx.fillText('홀덤 맨징 계산기 · 손실 비율별 자동 정산서', width / 2, height - 32);
+      const link = document.createElement('a');
+      link.download = `holic-manjing-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
 
-      // PNG 생성 -> 자동 다운로드 + 미리보기 모달 표시
-      const dataUrl = canvas.toDataURL('image/png');
-      const filename = `홀덤_맨징정산_${fileDate}.png`;
-
-      triggerPngDownload(dataUrl, filename);
-      openImagePreviewModal(dataUrl, filename);
-      showToast('정산서 이미지가 생성되었습니다!');
+      state.exportingImage = false;
+      render();
+      showToast('정산 이미지(PNG)가 저장되었습니다!');
     }
 
-    // =========================================================================
-    // 전체 초기화 모달 관리
-    // =========================================================================
-
-    function openResetModal() {
-      resetModal.classList.remove('hidden');
-      resetModal.classList.add('flex');
-    }
-
-    function closeResetModal() {
-      resetModal.classList.add('hidden');
-      resetModal.classList.remove('flex');
-    }
-
-    function resetAllData() {
-      totalPool = 0;
-      totalPoolInput.value = '';
-      nextPlayerId = 1;
-      players = [
-        { id: nextPlayerId++, name: '', loss: 0 },
-        { id: nextPlayerId++, name: '', loss: 0 },
-        { id: nextPlayerId++, name: '', loss: 0 },
-      ];
-      renderPlayers();
-      closeResetModal();
-      showToast('모든 항목이 초기화되었습니다.');
-    }
-
-    // 이벤트 리스너 연결
-    addPlayerBtn.addEventListener('click', () => addPlayer(true));
-    copyResultBtn.addEventListener('click', copySettlementResult);
-    saveImageBtn.addEventListener('click', generateSettlementImage);
-    resetAllBtn.addEventListener('click', openResetModal);
-    cancelResetBtn.addEventListener('click', closeResetModal);
-    confirmResetBtn.addEventListener('click', resetAllData);
-    resetModal.addEventListener('click', (e) => {
-      if (e.target === resetModal) closeResetModal();
-    });
-
-    downloadImageAgainBtn.addEventListener('click', () => {
-      if (lastGeneratedImageUrl) {
-        triggerPngDownload(lastGeneratedImageUrl, lastGeneratedFilename);
-        showToast('PNG 이미지 다운로드를 다시 시도했습니다!');
+    function renderPokerTable(assignments) {
+      const count = assignments.length;
+      if (count === 0) {
+        return `
+          <div class="table-rail rounded-[36px] p-3">
+            <div class="felt-surface rounded-[28px] py-12 px-6 text-center border border-emerald-400/20">
+              <div class="text-amber-300/90 font-semibold text-sm mb-1">HOLDEM TABLE SEAT DRAW</div>
+              <p class="text-slate-200 font-bold text-base">참석 멤버를 체크한 뒤 '자리뽑기 실행'을 눌러주세요</p>
+              <p class="text-emerald-200/70 text-xs mt-1.5">딜러(D) 자리 다음 좌석이 1번으로 시계방향 배정됩니다</p>
+            </div>
+          </div>
+        `;
       }
-    });
-    closeImageModalBtn.addEventListener('click', closeImagePreviewModal);
-    closeImageModalX.addEventListener('click', closeImagePreviewModal);
-    imagePreviewModal.addEventListener('click', (e) => {
-      if (e.target === imagePreviewModal) closeImagePreviewModal();
-    });
 
-    selectAllManualBtn.addEventListener('click', () => {
-      manualCopyTextarea.focus();
-      manualCopyTextarea.select();
-      try {
-        if (document.execCommand('copy')) {
-          showToast('카톡 공유용 결과가 복사되었습니다!');
-          closeManualCopyModal();
-        }
-      } catch (e) {
-        // 수동 복사 유지
-      }
-    });
-    closeManualModalBtn.addEventListener('click', closeManualCopyModal);
-    closeManualModalX.addEventListener('click', closeManualCopyModal);
-    manualCopyModal.addEventListener('click', (e) => {
-      if (e.target === manualCopyModal) closeManualCopyModal();
-    });
+      // 딜러(0번)를 상단 중앙에 두고 시계방향으로 좌석 배치
+      const seatCoords = assignments.map((seat, idx) => {
+        const angle = -Math.PI / 2 + (2 * Math.PI * idx) / count;
+        const rx = 41; // % 가로 반경
+        const ry = 39; // % 세로 반경
+        const left = 50 + rx * Math.cos(angle);
+        const top = 50 + ry * Math.sin(angle);
+        return { ...seat, left, top };
+      });
 
-    // =========================================================================
-    // 앱 초기화
-    // =========================================================================
-    function initApp() {
-      players = [
-        { id: nextPlayerId++, name: '', loss: 0 },
-        { id: nextPlayerId++, name: '', loss: 0 },
-        { id: nextPlayerId++, name: '', loss: 0 },
-      ];
-      renderPlayers();
+      return `
+        <div class="table-rail rounded-[40px] p-3 sm:p-4">
+          <div class="felt-surface relative w-full h-[360px] sm:h-[390px] rounded-[32px] border border-emerald-400/25 overflow-visible">
+            <!-- 테이블 중앙 펠트 로고 -->
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none px-4 text-center">
+              <span class="text-[11px] uppercase tracking-[0.22em] text-amber-300/80 font-semibold">HOLIC TABLE</span>
+              <span class="text-white/90 font-extrabold text-lg sm:text-xl mt-0.5">딜러: ${state.dealerName}</span>
+              <span class="text-emerald-200/75 text-[11px] mt-1">딜러 다음 자리 → 1번 시계방향</span>
+            </div>
+
+            ${seatCoords.map(seat => `
+              <div
+                style="left: ${seat.left.toFixed(1)}%; top: ${seat.top.toFixed(1)}%; transform: translate(-50%, -50%);"
+                class="absolute z-10 min-w-[74px] max-w-[104px] rounded-2xl px-2.5 py-2 text-center shadow-lg border transition ${
+                  seat.isDealer
+                    ? 'bg-amber-400 text-slate-950 border-amber-200 ring-2 ring-amber-300/60'
+                    : 'bg-slate-900/95 text-white border-slate-700/90'
+                }"
+              >
+                <div class="text-[10px] font-extrabold tracking-tight ${
+                  seat.isDealer ? 'text-slate-900' : 'text-emerald-400'
+                }">
+                  ${seat.seatLabel}
+                </div>
+                <div class="text-xs sm:text-sm font-bold truncate mt-0.5">${seat.name}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
     }
 
-    window.addEventListener('DOMContentLoaded', initApp);
+    function render() {
+      syncManjingPlayers();
+      const attendees = getAllAttendees();
+      const nonDealerAttendees = attendees.filter(name => name !== state.dealerName);
+      const { pool, totalLoss, items } = calculateManjing();
+
+      const appEl = document.getElementById('app');
+      appEl.innerHTML = `
+        <!-- 토스트 알림 -->
+        ${state.statusMessage ? `
+          <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-amber-300 border border-amber-400/40 px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-xl">
+            ${state.statusMessage}
+          </div>
+        ` : ''}
+
+        <!-- 헤더 -->
+        <header class="mb-5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <img
+              src="icon.png"
+              alt="Holic"
+              onerror="this.style.display='none'"
+              class="w-12 h-12 rounded-2xl object-cover border border-amber-400/40 shadow-md"
+            />
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">Holic 홀덤 매니저</h1>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  참석 ${attendees.length}명
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">멤버 체크 → 자리뽑기 · 딜러비 추첨 · 맨징 정산</p>
+            </div>
+          </div>
+        </header>
+
+        <!-- 1. 멤버 설정 섹션 -->
+        <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-white flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              오늘 참석 멤버 설정
+            </h2>
+            <div class="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                data-action="select-all-regulars"
+                class="text-emerald-400 hover:text-emerald-300 font-semibold"
+              >
+                단골 전체선택
+              </button>
+              <span class="text-slate-600">|</span>
+              <button
+                type="button"
+                data-action="clear-selection"
+                class="text-slate-400 hover:text-slate-200"
+              >
+                선택해제
+              </button>
+            </div>
+          </div>
+
+          <!-- 단골 멤버 체크 그리드 -->
+          <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+            ${state.regularMembers.map(member => {
+              const checked = state.selectedMembers.includes(member);
+              return `
+                <button
+                  type="button"
+                  data-action="toggle-member"
+                  data-name="${member}"
+                  class="flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition ${
+                    checked
+                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200 shadow-sm'
+                      : 'bg-slate-950/70 border-slate-800 text-slate-400 hover:border-slate-700'
+                  }"
+                >
+                  <span class="truncate">${member}</span>
+                  <span class="ml-1 text-xs font-extrabold ${checked ? 'text-emerald-300' : 'text-slate-600'}">
+                    ${checked ? '✓' : '+'}
+                  </span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- 오늘만 오는 추가 참가자 칩 -->
+          ${state.guestMembers.length > 0 ? `
+            <div class="mb-3">
+              <div class="text-[11px] font-semibold text-amber-300/90 mb-1.5">오늘 추가 참가자</div>
+              <div class="flex flex-wrap gap-1.5">
+                ${state.guestMembers.map(guest => `
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-400/15 text-amber-200 border border-amber-400/40">
+                    ${guest}
+                    <button
+                      type="button"
+                      data-action="toggle-member"
+                      data-name="${guest}"
+                      class="text-amber-300 hover:text-white font-bold"
+                      title="제외"
+                    >×</button>
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- 단골 멤버 추가 & 추가 참가자 입력 -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-800/80">
+            <div class="flex gap-1.5">
+              <input
+                type="text"
+                id="newRegularInput"
+                value="${state.newRegularInput}"
+                placeholder="단골 멤버 이름 추가"
+                class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 outline-none"
+              />
+              <button
+                type="button"
+                data-action="add-regular"
+                class="shrink-0 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold border border-slate-700"
+              >
+                단골등록
+              </button>
+            </div>
+
+            <div class="flex gap-1.5">
+              <input
+                type="text"
+                id="newGuestInput"
+                value="${state.newGuestInput}"
+                placeholder="처음 온 추가 참가자 입력"
+                class="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 outline-none"
+              />
+              <button
+                type="button"
+                data-action="add-guest"
+                class="shrink-0 px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold"
+              >
+                참가추가
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. 메인 3개 탭 (자리뽑기 / 딜러비 추첨 / 맨징) -->
+        <nav class="grid grid-cols-3 gap-2 bg-slate-900 border border-slate-800 p-1.5 rounded-2xl mb-4">
+          <button
+            type="button"
+            data-action="switch-tab"
+            data-tab="seats"
+            class="py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              state.activeTab === 'seats'
+                ? 'bg-emerald-500 text-slate-950 shadow'
+                : 'text-slate-300 hover:bg-slate-800/70'
+            }"
+          >
+            🪑 자리뽑기
+          </button>
+          <button
+            type="button"
+            data-action="switch-tab"
+            data-tab="dealerFee"
+            class="py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              state.activeTab === 'dealerFee'
+                ? 'bg-amber-400 text-slate-950 shadow'
+                : 'text-slate-300 hover:bg-slate-800/70'
+            }"
+          >
+            🎟️ 딜러비 추첨
+          </button>
+          <button
+            type="button"
+            data-action="switch-tab"
+            data-tab="manjing"
+            class="py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+              state.activeTab === 'manjing'
+                ? 'bg-emerald-500 text-slate-950 shadow'
+                : 'text-slate-300 hover:bg-slate-800/70'
+            }"
+          >
+            💰 맨징
+          </button>
+        </nav>
+
+        <!-- 탭 1: 자리뽑기 -->
+        ${state.activeTab === 'seats' ? `
+          <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-lg">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 class="text-base font-extrabold text-white">홀덤 테이블 자리뽑기</h2>
+                <p class="text-xs text-slate-400">총 ${attendees.length}석 · 딜러(D) 다음 좌석이 1번으로 배정됩니다</p>
+              </div>
+
+              <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                <button
+                  type="button"
+                  data-action="dealer-mode"
+                  data-mode="random"
+                  class="px-2.5 py-1 rounded-lg font-bold ${
+                    state.dealerMode === 'random' ? 'bg-amber-400 text-slate-950' : 'text-slate-400'
+                  }"
+                >
+                  딜러 랜덤
+                </button>
+                <button
+                  type="button"
+                  data-action="dealer-mode"
+                  data-mode="manual"
+                  class="px-2.5 py-1 rounded-lg font-bold ${
+                    state.dealerMode === 'manual' ? 'bg-amber-400 text-slate-950' : 'text-slate-400'
+                  }"
+                >
+                  딜러 직접지정
+                </button>
+              </div>
+            </div>
+
+            ${state.dealerMode === 'manual' && attendees.length > 0 ? `
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">딜러 선택</label>
+                <select
+                  id="manualDealerSelect"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white outline-none"
+                >
+                  ${attendees.map(name => `
+                    <option value="${name}" ${state.manualDealer === name ? 'selected' : ''}>${name} (딜러)</option>
+                  `).join('')}
+                </select>
+              </div>
+            ` : ''}
+
+            ${renderPokerTable(state.seatAssignments)}
+
+            <button
+              type="button"
+              data-action="draw-seats"
+              class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg transition"
+            >
+              🎲 자리뽑기 실행 (${attendees.length}명)
+            </button>
+
+            ${state.seatAssignments.length > 0 ? `
+              <div class="pt-2 border-t border-slate-800">
+                <div class="text-xs font-bold text-slate-400 mb-2">좌석 배정 목록</div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  ${state.seatAssignments.map(s => `
+                    <div class="flex items-center justify-between px-3 py-2 rounded-xl border ${
+                      s.isDealer
+                        ? 'bg-amber-400/15 border-amber-400/50 text-amber-200'
+                        : 'bg-slate-950/80 border-slate-800 text-slate-200'
+                    }">
+                      <span class="text-xs font-extrabold ${s.isDealer ? 'text-amber-300' : 'text-emerald-400'}">${s.seatLabel}</span>
+                      <span class="text-sm font-bold">${s.name}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </section>
+        ` : ''}
+
+        <!-- 탭 2: 딜러비 추첨 (회차 기록 없이 단발 추첨 후 종료) -->
+        ${state.activeTab === 'dealerFee' ? `
+          <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-lg">
+            <div>
+              <h2 class="text-base font-extrabold text-white">라운드 종료 딜러비 추첨</h2>
+              <p class="text-xs text-slate-400 mt-0.5">
+                참석 인원 중 딜러(${state.dealerName || '미지정'})를 제외한 나머지 ${nonDealerAttendees.length}명 중 랜덤 2명 당첨
+              </p>
+            </div>
+
+            <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3.5 text-xs space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">현재 딜러 (추첨 제외)</span>
+                <span class="font-bold text-amber-300">${state.dealerName ? `${state.dealerName} (D)` : '자리뽑기 전 전체 대상'}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">추첨 대상 인원</span>
+                <span class="font-bold text-emerald-300">${nonDealerAttendees.length}명</span>
+              </div>
+            </div>
+
+            ${state.dealerFeeDone ? `
+              <div class="bg-gradient-to-br from-amber-400/15 to-emerald-500/10 border border-amber-400/50 rounded-2xl p-5 text-center space-y-3">
+                <div class="inline-block px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-extrabold">
+                  추첨 완료 · 종료
+                </div>
+                <div class="text-sm text-slate-300 font-semibold">이번 라운드 딜러비 당첨자 (2명)</div>
+                <div class="flex items-center justify-center gap-3 pt-1">
+                  ${state.dealerFeeWinners.map((winner, i) => `
+                    <div class="px-5 py-3 rounded-2xl bg-slate-950 border border-amber-300/60 shadow-md">
+                      <div class="text-[11px] text-amber-300 font-bold">당첨 ${i + 1}</div>
+                      <div class="text-lg font-extrabold text-white mt-0.5">${winner}</div>
+                    </div>
+                  `).join('')}
+                </div>
+                <button
+                  type="button"
+                  data-action="reset-dealer-fee"
+                  class="mt-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                >
+                  새 라운드 준비하기
+                </button>
+              </div>
+            ` : `
+              <button
+                type="button"
+                data-action="draw-dealer-fee"
+                class="w-full py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg transition"
+              >
+                🎟️ 딜러비 2명 추첨하기
+              </button>
+            `}
+          </section>
+        ` : ''}
+
+        <!-- 탭 3: 맨징 계산기 -->
+        ${state.activeTab === 'manjing' ? `
+          <section class="space-y-4">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+              <div class="flex items-center justify-between">
+                <label for="totalPoolInput" class="text-sm font-bold text-amber-300">
+                  ● 총 맨징 금액 (배분할 상금)
+                </label>
+                <button
+                  type="button"
+                  data-action="toggle-round100"
+                  class="px-3 py-1 rounded-full text-xs font-bold border transition ${
+                    state.roundTo100
+                      ? 'bg-amber-400/20 border-amber-400 text-amber-200'
+                      : 'bg-slate-800 border-slate-700 text-slate-300'
+                  }"
+                >
+                  ${state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF'}
+                </button>
+              </div>
+
+              <div class="relative">
+                <input
+                  id="totalPoolInput"
+                  type="text"
+                  inputmode="numeric"
+                  value="${formatNumber(pool)}"
+                  class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-2xl px-4 py-3.5 pr-12 text-right text-xl font-extrabold text-white outline-none"
+                />
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">원</span>
+              </div>
+
+              <div class="grid grid-cols-4 gap-2">
+                <button type="button" data-action="add-pool" data-amount="10000" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">+1만</button>
+                <button type="button" data-action="add-pool" data-amount="50000" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">+5만</button>
+                <button type="button" data-action="add-pool" data-amount="100000" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">+10만</button>
+                <button type="button" data-action="reset-pool" class="py-2 rounded-xl bg-rose-950/70 hover:bg-rose-900/70 text-xs font-bold text-rose-300 border border-rose-800/50">초기화</button>
+              </div>
+            </div>
+
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span class="font-bold text-slate-200">참여 멤버 마이너스 입력 (${items.length}명)</span>
+                <span>총 마이너스: <strong class="text-rose-300">${formatNumber(totalLoss)}원</strong></span>
+              </div>
+
+              ${items.length === 0 ? `
+                <div class="text-center py-8 text-sm text-slate-400">
+                  위에서 오늘 참석 멤버를 체크해 주세요.
+                </div>
+              ` : `
+                <div class="space-y-2.5">
+                  ${items.map((item, idx) => `
+                    <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-3 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-sm font-extrabold text-white">${idx + 1}. ${item.name}</span>
+                        <span class="text-xs font-semibold text-slate-400">비율 ${(item.ratio * 100).toFixed(1)}%</span>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2 items-center">
+                        <div class="relative">
+                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-rose-400">-</span>
+                          <input
+                            type="text"
+                            inputmode="numeric"
+                            data-player-loss-id="${item.id}"
+                            value="${formatNumber(item.loss)}"
+                            class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-400 rounded-xl pl-7 pr-7 py-2 text-right text-sm font-bold text-white outline-none"
+                          />
+                          <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-500">원</span>
+                        </div>
+
+                        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-2 text-right">
+                          <div class="text-[10px] text-emerald-300/80 font-semibold">맨징 금액</div>
+                          <div class="text-sm font-extrabold text-emerald-300">+${formatNumber(item.settledAmount)}원</div>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+
+              <div class="grid grid-cols-2 gap-2.5 pt-2">
+                <button
+                  type="button"
+                  data-action="copy-kakao"
+                  class="py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs sm:text-sm transition"
+                >
+                  ${state.copiedText ? '✓ 카톡 복사 완료' : '💬 카톡 내역 복사'}
+                </button>
+                <button
+                  type="button"
+                  data-action="export-png"
+                  class="py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm transition"
+                >
+                  ${state.exportingImage ? '저장 중...' : '🖼️ 이미지 저장 (PNG)'}
+                </button>
+              </div>
+            </div>
+          </section>
+        ` : ''}
+      `;
+
+      bindEvents();
+    }
+
+    function bindEvents() {
+      const regInput = document.getElementById('newRegularInput');
+      if (regInput) {
+        regInput.addEventListener('input', (e) => {
+          state.newRegularInput = e.target.value;
+        });
+        regInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') addRegularMember();
+        });
+      }
+
+      const guestInput = document.getElementById('newGuestInput');
+      if (guestInput) {
+        guestInput.addEventListener('input', (e) => {
+          state.newGuestInput = e.target.value;
+        });
+        guestInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') addGuestMember();
+        });
+      }
+
+      const manualSelect = document.getElementById('manualDealerSelect');
+      if (manualSelect) {
+        manualSelect.addEventListener('change', (e) => {
+          state.manualDealer = e.target.value;
+        });
+      }
+
+      const poolInput = document.getElementById('totalPoolInput');
+      if (poolInput) {
+        poolInput.addEventListener('input', (e) => {
+          const val = parseDigits(e.target.value);
+          state.totalPool = val;
+          e.target.value = formatNumber(val);
+        });
+        poolInput.addEventListener('blur', () => render());
+      }
+
+      document.querySelectorAll('[data-player-loss-id]').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          const id = Number(e.target.getAttribute('data-player-loss-id'));
+          const val = parseDigits(e.target.value);
+          state.players = state.players.map(p => (p.id === id ? { ...p, loss: val } : p));
+          e.target.value = formatNumber(val);
+        });
+        input.addEventListener('blur', () => render());
+      });
+
+      document.querySelectorAll('[data-action]').forEach((el) => {
+        el.addEventListener('click', () => {
+          const action = el.getAttribute('data-action');
+          if (action === 'toggle-member') {
+            toggleAttendee(el.getAttribute('data-name'));
+          } else if (action === 'select-all-regulars') {
+            state.selectedMembers = [...state.regularMembers];
+            persistMemberState();
+            render();
+          } else if (action === 'clear-selection') {
+            state.selectedMembers = [];
+            state.guestMembers = [];
+            persistMemberState();
+            render();
+          } else if (action === 'add-regular') {
+            addRegularMember();
+          } else if (action === 'add-guest') {
+            addGuestMember();
+          } else if (action === 'switch-tab') {
+            state.activeTab = el.getAttribute('data-tab');
+            render();
+          } else if (action === 'dealer-mode') {
+            state.dealerMode = el.getAttribute('data-mode');
+            if (state.dealerMode === 'manual' && !state.manualDealer) {
+              state.manualDealer = getAllAttendees()[0] || '';
+            }
+            render();
+          } else if (action === 'draw-seats') {
+            drawSeats();
+          } else if (action === 'draw-dealer-fee') {
+            drawDealerFeeWinners();
+          } else if (action === 'reset-dealer-fee') {
+            resetDealerFeeRound();
+          } else if (action === 'toggle-round100') {
+            state.roundTo100 = !state.roundTo100;
+            render();
+          } else if (action === 'add-pool') {
+            const amount = Number(el.getAttribute('data-amount')) || 0;
+            state.totalPool = (Number(state.totalPool) || 0) + amount;
+            render();
+          } else if (action === 'reset-pool') {
+            state.totalPool = 0;
+            state.players = state.players.map(p => ({ ...p, loss: 0 }));
+            render();
+          } else if (action === 'copy-kakao') {
+            copySettlementText();
+          } else if (action === 'export-png') {
+            exportSettlementPng();
+          }
+        });
+      });
+    }
+
+    render();
   </script>
 </body>
 </html>
