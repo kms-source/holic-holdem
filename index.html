@@ -5,11 +5,11 @@
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Holic 홀덤 매니저</title>
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-  <link rel="stylesheet" as="style" crossorigin href="[https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css](https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css)" />
-  <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       theme: {
@@ -17,13 +17,6 @@
           fontFamily: {
             sans: ['Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
           },
-          colors: {
-            slate: {
-              850: '#172033',
-              920: '#0b1120',
-              950: '#060a13',
-            }
-          }
         }
       }
     }
@@ -33,6 +26,7 @@
       background-color: #090d16;
       color: #f1f5f9;
       -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
     }
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button {
@@ -43,17 +37,17 @@
       -moz-appearance: textfield;
     }
     .felt-surface {
-      background: radial-gradient(ellipse at center, #134e3a 0%, #0b3326 68%, #072219 100%);
-      box-shadow: inset 0 0 36px rgba(0, 0, 0, 0.65);
+      background: radial-gradient(ellipse at center, #155e47 0%, #0d3b2c 68%, #072219 100%);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.7);
     }
     .table-rail {
-      background: linear-gradient(145deg, #272018 0%, #161310 55%, #231c15 100%);
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(251, 191, 36, 0.25);
+      background: linear-gradient(145deg, #2d2419 0%, #17130f 55%, #261e15 100%);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(251, 191, 36, 0.3);
     }
   </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
-  <div id="app" class="max-w-xl mx-auto px-4 py-6 pb-20"></div>
+  <div id="app" class="w-full max-w-md mx-auto px-3.5 py-4 pb-24"></div>
 
   <script>
     const DEFAULT_REGULAR_MEMBERS = [
@@ -90,17 +84,14 @@
       newRegularInput: '',
       newGuestInput: '',
 
-      // 자리뽑기 상태
       dealerMode: 'random', // 'random' | 'manual'
       manualDealer: '',
       dealerName: '',
-      seatAssignments: [], // [{ seatLabel: 'D' | '1번' ..., name: '', isDealer: bool }]
+      seatAssignments: [],
 
-      // 딜러비 추첨 상태 (회차 누적 없이 추첨 후 종료)
       dealerFeeWinners: [],
       dealerFeeDone: false,
 
-      // 맨징 계산기 상태
       totalPool: 0,
       roundTo100: true,
       players: [],
@@ -155,7 +146,7 @@
       window.__toastTimer = setTimeout(() => {
         state.statusMessage = '';
         render();
-      }, 2200);
+      }, 2000);
     }
 
     function persistMemberState() {
@@ -164,7 +155,6 @@
       saveJSON(STORAGE_KEYS.selected, state.selectedMembers);
       syncManjingPlayers(true);
 
-      // 참석자 변경 시 기존 추첨·자리 결과 정합성 유지
       const attendees = getAllAttendees();
       if (state.manualDealer && !attendees.includes(state.manualDealer)) {
         state.manualDealer = attendees[0] || '';
@@ -204,14 +194,14 @@
       const trimmed = state.newRegularInput.trim();
       if (!trimmed) return;
       if (state.regularMembers.includes(trimmed)) {
-        showToast('이미 단골 멤버에 등록된 이름입니다.');
+        showToast('이미 단골 멤버에 있는 이름입니다.');
         return;
       }
       state.regularMembers = [...state.regularMembers, trimmed];
       state.selectedMembers = [...new Set([...state.selectedMembers, trimmed])];
       state.newRegularInput = '';
       persistMemberState();
-      showToast(`단골 멤버 '${trimmed}' 추가 완료!`);
+      showToast(`'${trimmed}' 단골 추가 완료`);
     }
 
     function addGuestMember() {
@@ -222,16 +212,16 @@
         if (!state.selectedMembers.includes(trimmed) && state.regularMembers.includes(trimmed)) {
           state.selectedMembers = [...state.selectedMembers, trimmed];
           persistMemberState();
-          showToast(`'${trimmed}' 님을 오늘 참석자에 체크했습니다.`);
+          showToast(`'${trimmed}' 참석 체크 완료`);
           return;
         }
-        showToast('이미 참가자 목록에 있는 이름입니다.');
+        showToast('이미 참가자 목록에 있습니다.');
         return;
       }
       state.guestMembers = [...state.guestMembers, trimmed];
       state.newGuestInput = '';
       persistMemberState();
-      showToast(`추가 참가자 '${trimmed}' 등록 완료!`);
+      showToast(`추가 참가자 '${trimmed}' 등록 완료`);
     }
 
     function shuffleArray(arr) {
@@ -243,26 +233,24 @@
       return copy;
     }
 
-    // 딜러 자리 다음 좌석부터 1번, 시계방향 순번 배정
     function drawSeats() {
       const attendees = getAllAttendees();
       if (attendees.length < 2) {
-        showToast('자리뽑기를 하려면 최소 2명 이상 참석해야 합니다.');
+        showToast('최소 2명 이상 체크해 주세요.');
         return;
       }
 
-      let chosenDealer = '';
-      if (state.dealerMode === 'manual') {
-        chosenDealer = attendees.includes(state.manualDealer) ? state.manualDealer : attendees[0];
-      } else {
-        chosenDealer = attendees[Math.floor(Math.random() * attendees.length)];
-      }
+      const chosenDealer =
+        state.dealerMode === 'manual' && attendees.includes(state.manualDealer)
+          ? state.manualDealer
+          : attendees[Math.floor(Math.random() * attendees.length)];
 
       const others = shuffleArray(attendees.filter(name => name !== chosenDealer));
-      const assignments = [
+      state.dealerName = chosenDealer;
+      state.seatAssignments = [
         {
           seatNumber: 0,
-          seatLabel: '딜러 (D)',
+          seatLabel: 'D (딜러)',
           name: chosenDealer,
           isDealer: true
         },
@@ -273,28 +261,19 @@
           isDealer: false
         }))
       ];
-
-      state.dealerName = chosenDealer;
-      state.seatAssignments = assignments;
-
-      // 딜러가 바뀌면 기존 딜러비 추첨 결과 초기화
       state.dealerFeeWinners = [];
       state.dealerFeeDone = false;
       render();
     }
 
-    // 매 라운드 종료 후 딜러 제외 랜덤 2명 추첨 (회차 기록 없이 단발 종료)
     function drawDealerFeeWinners() {
       const attendees = getAllAttendees();
       const eligible = attendees.filter(name => name !== state.dealerName);
-
       if (eligible.length < 2) {
-        showToast('딜러 제외 대상 인원이 2명 이상이어야 추첨할 수 있습니다.');
+        showToast('딜러 제외 2명 이상 필요합니다.');
         return;
       }
-
-      const winners = shuffleArray(eligible).slice(0, 2);
-      state.dealerFeeWinners = winners;
+      state.dealerFeeWinners = shuffleArray(eligible).slice(0, 2);
       state.dealerFeeDone = true;
       render();
     }
@@ -350,14 +329,12 @@
         `• 반올림 기준: ${state.roundTo100 ? '100원 단위' : '원 단위'}`,
         ``
       ];
-
       items.forEach((item, index) => {
         const pct = (item.ratio * 100).toFixed(1);
         lines.push(
           `${index + 1}. ${item.name} — 마이너스 ${formatNumber(item.loss)}원 (${pct}%) → 맨징 ${formatNumber(item.settledAmount)}원`
         );
       });
-
       return lines.join('\n');
     }
 
@@ -376,13 +353,13 @@
         }
         state.copiedText = true;
         render();
-        showToast('카카오톡용 정산 내역이 복사되었습니다!');
+        showToast('카톡 정산 내역 복사 완료');
         setTimeout(() => {
           state.copiedText = false;
           render();
-        }, 2000);
+        }, 1800);
       } catch {
-        showToast('복사에 실패했습니다. 다시 시도해 주세요.');
+        showToast('복사에 실패했습니다.');
       }
     }
 
@@ -456,60 +433,60 @@
 
       state.exportingImage = false;
       render();
-      showToast('정산 이미지(PNG)가 저장되었습니다!');
+      showToast('PNG 이미지 저장 완료');
     }
 
     function renderPokerTable(assignments) {
       const count = assignments.length;
       if (count === 0) {
         return `
-          <div class="table-rail rounded-[36px] p-3">
-            <div class="felt-surface rounded-[28px] py-12 px-6 text-center border border-emerald-400/20">
-              <div class="text-amber-300/90 font-semibold text-sm mb-1">HOLDEM TABLE SEAT DRAW</div>
-              <p class="text-slate-200 font-bold text-base">참석 멤버를 체크한 뒤 '자리뽑기 실행'을 눌러주세요</p>
-              <p class="text-emerald-200/70 text-xs mt-1.5">딜러(D) 자리 다음 좌석이 1번으로 시계방향 배정됩니다</p>
+          <div class="table-rail rounded-[36px] p-2.5 my-2">
+            <div class="felt-surface rounded-[28px] py-10 px-4 text-center border border-emerald-400/20">
+              <div class="text-xs font-extrabold tracking-wider text-amber-300">HOLDEM TABLE</div>
+              <div class="text-sm font-bold text-white mt-1">자리뽑기 버튼을 누르면 좌석이 배치됩니다</div>
+              <div class="text-xs text-emerald-200/75 mt-1">딜러(D) 다음 자리가 1번으로 시계방향 배정</div>
             </div>
           </div>
         `;
       }
 
-      // 딜러(0번)를 상단 중앙에 두고 시계방향으로 좌석 배치
       const seatCoords = assignments.map((seat, idx) => {
         const angle = -Math.PI / 2 + (2 * Math.PI * idx) / count;
-        const rx = 41; // % 가로 반경
-        const ry = 39; // % 세로 반경
+        const rx = 36;
+        const ry = 35;
         const left = 50 + rx * Math.cos(angle);
         const top = 50 + ry * Math.sin(angle);
         return { ...seat, left, top };
       });
 
       return `
-        <div class="table-rail rounded-[40px] p-3 sm:p-4">
-          <div class="felt-surface relative w-full h-[360px] sm:h-[390px] rounded-[32px] border border-emerald-400/25 overflow-visible">
-            <!-- 테이블 중앙 펠트 로고 -->
-            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none px-4 text-center">
-              <span class="text-[11px] uppercase tracking-[0.22em] text-amber-300/80 font-semibold">HOLIC TABLE</span>
-              <span class="text-white/90 font-extrabold text-lg sm:text-xl mt-0.5">딜러: ${state.dealerName}</span>
-              <span class="text-emerald-200/75 text-[11px] mt-1">딜러 다음 자리 → 1번 시계방향</span>
-            </div>
-
-            ${seatCoords.map(seat => `
-              <div
-                style="left: ${seat.left.toFixed(1)}%; top: ${seat.top.toFixed(1)}%; transform: translate(-50%, -50%);"
-                class="absolute z-10 min-w-[74px] max-w-[104px] rounded-2xl px-2.5 py-2 text-center shadow-lg border transition ${
-                  seat.isDealer
-                    ? 'bg-amber-400 text-slate-950 border-amber-200 ring-2 ring-amber-300/60'
-                    : 'bg-slate-900/95 text-white border-slate-700/90'
-                }"
-              >
-                <div class="text-[10px] font-extrabold tracking-tight ${
-                  seat.isDealer ? 'text-slate-900' : 'text-emerald-400'
-                }">
-                  ${seat.seatLabel}
-                </div>
-                <div class="text-xs sm:text-sm font-bold truncate mt-0.5">${seat.name}</div>
+        <div class="my-2 px-1">
+          <div class="table-rail rounded-[42px] p-2.5">
+            <div class="felt-surface relative w-full h-[330px] rounded-[34px] border border-emerald-400/25">
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none text-center px-3">
+                <span class="text-[10px] font-bold tracking-[0.2em] text-amber-300/85">HOLIC HOLDEM</span>
+                <span class="text-sm font-extrabold text-white mt-0.5">딜러: ${state.dealerName}</span>
+                <span class="text-[11px] text-emerald-200/75 mt-0.5">딜러 다음 → 1번 시계방향</span>
               </div>
-            `).join('')}
+
+              ${seatCoords.map(seat => `
+                <div
+                  style="left: ${seat.left.toFixed(1)}%; top: ${seat.top.toFixed(1)}%; transform: translate(-50%, -50%);"
+                  class="absolute z-10 min-w-[66px] max-w-[84px] rounded-xl px-2 py-1.5 text-center shadow-lg border ${
+                    seat.isDealer
+                      ? 'bg-amber-400 text-slate-950 border-amber-200 ring-2 ring-amber-300/60'
+                      : 'bg-slate-900/95 text-white border-slate-700'
+                  }"
+                >
+                  <div class="text-[10px] font-extrabold leading-tight ${
+                    seat.isDealer ? 'text-slate-900' : 'text-emerald-400'
+                  }">
+                    ${seat.seatLabel}
+                  </div>
+                  <div class="text-xs font-extrabold truncate leading-tight mt-0.5">${seat.name}</div>
+                </div>
+              `).join('')}
+            </div>
           </div>
         </div>
       `;
@@ -523,62 +500,56 @@
 
       const appEl = document.getElementById('app');
       appEl.innerHTML = `
-        <!-- 토스트 알림 -->
         ${state.statusMessage ? `
-          <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-amber-300 border border-amber-400/40 px-4 py-2.5 rounded-full text-xs sm:text-sm font-semibold shadow-xl">
+          <div class="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-amber-300 border border-amber-400/50 px-4 py-2 rounded-full text-xs font-bold shadow-xl">
             ${state.statusMessage}
           </div>
         ` : ''}
 
-        <!-- 헤더 -->
-        <header class="mb-5 flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
+        <!-- 컴팩트 앱 헤더 -->
+        <header class="flex items-center justify-between bg-slate-900/95 border border-slate-800 rounded-2xl px-3.5 py-2.5 mb-3 shadow">
+          <div class="flex items-center gap-2.5 min-w-0">
             <img
               src="icon.png"
               alt="Holic"
               onerror="this.style.display='none'"
-              class="w-12 h-12 rounded-2xl object-cover border border-amber-400/40 shadow-md"
+              class="w-11 h-11 rounded-xl object-cover shrink-0 border border-amber-400/40"
             />
-            <div>
-              <div class="flex items-center gap-2">
-                <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">Holic 홀덤 매니저</h1>
-                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  참석 ${attendees.length}명
-                </span>
-              </div>
-              <p class="text-xs text-slate-400 mt-0.5">멤버 체크 → 자리뽑기 · 딜러비 추첨 · 맨징 정산</p>
+            <div class="min-w-0">
+              <h1 class="text-base font-extrabold text-white truncate">Holic 홀덤 매니저</h1>
+              <p class="text-[11px] text-slate-400 truncate">멤버 체크 후 탭으로 바로 진행</p>
             </div>
           </div>
+          <span class="shrink-0 px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            ${attendees.length}명 참석
+          </span>
         </header>
 
-        <!-- 1. 멤버 설정 섹션 -->
-        <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 mb-4 shadow-lg">
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-sm font-bold text-white flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-              오늘 참석 멤버 설정
-            </h2>
-            <div class="flex items-center gap-2 text-xs">
-              <button
-                type="button"
-                data-action="select-all-regulars"
-                class="text-emerald-400 hover:text-emerald-300 font-semibold"
-              >
-                단골 전체선택
+        <!-- 멤버 설정 카드 -->
+        <section class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 mb-3 shadow">
+          <div class="flex items-center justify-between mb-2.5">
+            <h2 class="text-sm font-extrabold text-white">오늘 참석 멤버</h2>
+            <div class="flex items-center gap-2 text-xs font-bold">
+              <button type="button" data-action="select-all-regulars" class="px-2 py-1 rounded-lg bg-slate-800 text-emerald-300 active:scale-95">
+                전체선택
               </button>
-              <span class="text-slate-600">|</span>
-              <button
-                type="button"
-                data-action="clear-selection"
-                class="text-slate-400 hover:text-slate-200"
-              >
-                선택해제
+              <button type="button" data-action="clear-selection" class="px-2 py-1 rounded-lg bg-slate-800 text-slate-300 active:scale-95">
+                해제
               </button>
             </div>
           </div>
 
-          <!-- 단골 멤버 체크 그리드 -->
-          <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+          <!-- 선택된 참석자 요약 칩 -->
+          <div class="flex flex-wrap gap-1.5 mb-2.5 min-h-[28px]">
+            ${attendees.length > 0 ? attendees.map(name => `
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-200 border border-emerald-500/30">
+                ${name}
+              </span>
+            `).join('') : `<span class="text-xs text-slate-500 py-1">참석 멤버를 터치해 선택하세요.</span>`}
+          </div>
+
+          <!-- 단골 멤버 3열 버튼 그리드 -->
+          <div class="grid grid-cols-3 gap-2 mb-3">
             ${state.regularMembers.map(member => {
               const checked = state.selectedMembers.includes(member);
               return `
@@ -586,14 +557,14 @@
                   type="button"
                   data-action="toggle-member"
                   data-name="${member}"
-                  class="flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold border transition ${
+                  class="min-h-[42px] px-2.5 py-2 rounded-xl text-sm font-extrabold border flex items-center justify-between active:scale-95 transition ${
                     checked
-                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200 shadow-sm'
-                      : 'bg-slate-950/70 border-slate-800 text-slate-400 hover:border-slate-700'
+                      ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200'
+                      : 'bg-slate-950 border-slate-800 text-slate-400'
                   }"
                 >
                   <span class="truncate">${member}</span>
-                  <span class="ml-1 text-xs font-extrabold ${checked ? 'text-emerald-300' : 'text-slate-600'}">
+                  <span class="text-xs font-black ml-1 ${checked ? 'text-emerald-300' : 'text-slate-600'}">
                     ${checked ? '✓' : '+'}
                   </span>
                 </button>
@@ -601,58 +572,55 @@
             }).join('')}
           </div>
 
-          <!-- 오늘만 오는 추가 참가자 칩 -->
+          <!-- 추가 참가자 칩 -->
           ${state.guestMembers.length > 0 ? `
             <div class="mb-3">
-              <div class="text-[11px] font-semibold text-amber-300/90 mb-1.5">오늘 추가 참가자</div>
+              <div class="text-[11px] font-bold text-amber-300 mb-1.5">오늘 추가 참가자</div>
               <div class="flex flex-wrap gap-1.5">
                 ${state.guestMembers.map(guest => `
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-400/15 text-amber-200 border border-amber-400/40">
-                    ${guest}
-                    <button
-                      type="button"
-                      data-action="toggle-member"
-                      data-name="${guest}"
-                      class="text-amber-300 hover:text-white font-bold"
-                      title="제외"
-                    >×</button>
-                  </span>
+                  <button
+                    type="button"
+                    data-action="toggle-member"
+                    data-name="${guest}"
+                    class="px-3 py-1.5 rounded-full text-xs font-extrabold bg-amber-400/20 text-amber-200 border border-amber-400/50"
+                  >
+                    ${guest} ×
+                  </button>
                 `).join('')}
               </div>
             </div>
           ` : ''}
 
           <!-- 단골 멤버 추가 & 추가 참가자 입력 -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-800/80">
-            <div class="flex gap-1.5">
+          <div class="space-y-2 pt-2.5 border-t border-slate-800">
+            <div class="flex gap-2">
               <input
                 type="text"
                 id="newRegularInput"
                 value="${state.newRegularInput}"
                 placeholder="단골 멤버 이름 추가"
-                class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 outline-none"
+                class="flex-1 min-w-0 h-11 bg-slate-950 border border-slate-800 focus:border-emerald-400 rounded-xl px-3 text-sm text-white placeholder-slate-500 outline-none"
               />
               <button
                 type="button"
                 data-action="add-regular"
-                class="shrink-0 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-300 text-xs font-bold border border-slate-700"
+                class="shrink-0 h-11 px-4 rounded-xl bg-slate-800 text-emerald-300 text-xs font-extrabold border border-slate-700 active:scale-95"
               >
                 단골등록
               </button>
             </div>
-
-            <div class="flex gap-1.5">
+            <div class="flex gap-2">
               <input
                 type="text"
                 id="newGuestInput"
                 value="${state.newGuestInput}"
                 placeholder="처음 온 추가 참가자 입력"
-                class="w-full bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl px-3 py-2 text-xs sm:text-sm text-white placeholder-slate-500 outline-none"
+                class="flex-1 min-w-0 h-11 bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl px-3 text-sm text-white placeholder-slate-500 outline-none"
               />
               <button
                 type="button"
                 data-action="add-guest"
-                class="shrink-0 px-3 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold"
+                class="shrink-0 h-11 px-4 rounded-xl bg-amber-400 text-slate-950 text-xs font-black active:scale-95"
               >
                 참가추가
               </button>
@@ -660,16 +628,16 @@
           </div>
         </section>
 
-        <!-- 2. 메인 3개 탭 (자리뽑기 / 딜러비 추첨 / 맨징) -->
-        <nav class="grid grid-cols-3 gap-2 bg-slate-900 border border-slate-800 p-1.5 rounded-2xl mb-4">
+        <!-- 3개 기능 탭 -->
+        <nav class="grid grid-cols-3 gap-2 bg-slate-900 border border-slate-800 p-1.5 rounded-2xl mb-3 sticky top-2 z-30 shadow-lg">
           <button
             type="button"
             data-action="switch-tab"
             data-tab="seats"
-            class="py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+            class="h-11 rounded-xl text-xs font-extrabold transition ${
               state.activeTab === 'seats'
-                ? 'bg-emerald-500 text-slate-950 shadow'
-                : 'text-slate-300 hover:bg-slate-800/70'
+                ? 'bg-emerald-500 text-slate-950'
+                : 'text-slate-300'
             }"
           >
             🪑 자리뽑기
@@ -678,22 +646,22 @@
             type="button"
             data-action="switch-tab"
             data-tab="dealerFee"
-            class="py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+            class="h-11 rounded-xl text-xs font-extrabold transition ${
               state.activeTab === 'dealerFee'
-                ? 'bg-amber-400 text-slate-950 shadow'
-                : 'text-slate-300 hover:bg-slate-800/70'
+                ? 'bg-amber-400 text-slate-950'
+                : 'text-slate-300'
             }"
           >
-            🎟️ 딜러비 추첨
+            🎟️ 딜러비
           </button>
           <button
             type="button"
             data-action="switch-tab"
             data-tab="manjing"
-            class="py-2.5 px-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+            class="h-11 rounded-xl text-xs font-extrabold transition ${
               state.activeTab === 'manjing'
-                ? 'bg-emerald-500 text-slate-950 shadow'
-                : 'text-slate-300 hover:bg-slate-800/70'
+                ? 'bg-emerald-500 text-slate-950'
+                : 'text-slate-300'
             }"
           >
             💰 맨징
@@ -702,49 +670,45 @@
 
         <!-- 탭 1: 자리뽑기 -->
         ${state.activeTab === 'seats' ? `
-          <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-lg">
-            <div class="flex flex-wrap items-center justify-between gap-2">
+          <section class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 space-y-3 shadow">
+            <div class="flex items-center justify-between gap-2">
               <div>
-                <h2 class="text-base font-extrabold text-white">홀덤 테이블 자리뽑기</h2>
-                <p class="text-xs text-slate-400">총 ${attendees.length}석 · 딜러(D) 다음 좌석이 1번으로 배정됩니다</p>
+                <h2 class="text-sm font-extrabold text-white">홀덤 테이블 자리뽑기</h2>
+                <p class="text-[11px] text-slate-400">총 ${attendees.length}석 · 딜러 다음 좌석 1번</p>
               </div>
-
-              <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+              <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
                 <button
                   type="button"
                   data-action="dealer-mode"
                   data-mode="random"
-                  class="px-2.5 py-1 rounded-lg font-bold ${
+                  class="px-2.5 py-1.5 rounded-lg ${
                     state.dealerMode === 'random' ? 'bg-amber-400 text-slate-950' : 'text-slate-400'
                   }"
                 >
-                  딜러 랜덤
+                  랜덤
                 </button>
                 <button
                   type="button"
                   data-action="dealer-mode"
                   data-mode="manual"
-                  class="px-2.5 py-1 rounded-lg font-bold ${
+                  class="px-2.5 py-1.5 rounded-lg ${
                     state.dealerMode === 'manual' ? 'bg-amber-400 text-slate-950' : 'text-slate-400'
                   }"
                 >
-                  딜러 직접지정
+                  직접지정
                 </button>
               </div>
             </div>
 
             ${state.dealerMode === 'manual' && attendees.length > 0 ? `
-              <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1.5">딜러 선택</label>
-                <select
-                  id="manualDealerSelect"
-                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white outline-none"
-                >
-                  ${attendees.map(name => `
-                    <option value="${name}" ${state.manualDealer === name ? 'selected' : ''}>${name} (딜러)</option>
-                  `).join('')}
-                </select>
-              </div>
+              <select
+                id="manualDealerSelect"
+                class="w-full h-11 bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm font-bold text-white outline-none"
+              >
+                ${attendees.map(name => `
+                  <option value="${name}" ${state.manualDealer === name ? 'selected' : ''}>딜러 지정: ${name}</option>
+                `).join('')}
+              </select>
             ` : ''}
 
             ${renderPokerTable(state.seatAssignments)}
@@ -752,79 +716,75 @@
             <button
               type="button"
               data-action="draw-seats"
-              class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg transition"
+              class="w-full h-12 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-sm shadow active:scale-[0.99]"
             >
               🎲 자리뽑기 실행 (${attendees.length}명)
             </button>
 
             ${state.seatAssignments.length > 0 ? `
-              <div class="pt-2 border-t border-slate-800">
-                <div class="text-xs font-bold text-slate-400 mb-2">좌석 배정 목록</div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  ${state.seatAssignments.map(s => `
-                    <div class="flex items-center justify-between px-3 py-2 rounded-xl border ${
-                      s.isDealer
-                        ? 'bg-amber-400/15 border-amber-400/50 text-amber-200'
-                        : 'bg-slate-950/80 border-slate-800 text-slate-200'
-                    }">
-                      <span class="text-xs font-extrabold ${s.isDealer ? 'text-amber-300' : 'text-emerald-400'}">${s.seatLabel}</span>
-                      <span class="text-sm font-bold">${s.name}</span>
-                    </div>
-                  `).join('')}
-                </div>
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                ${state.seatAssignments.map(s => `
+                  <div class="flex items-center justify-between px-3 py-2.5 rounded-xl border ${
+                    s.isDealer
+                      ? 'bg-amber-400/15 border-amber-400/50 text-amber-200'
+                      : 'bg-slate-950 border-slate-800 text-slate-200'
+                  }">
+                    <span class="text-xs font-black ${s.isDealer ? 'text-amber-300' : 'text-emerald-400'}">${s.seatLabel}</span>
+                    <span class="text-sm font-extrabold">${s.name}</span>
+                  </div>
+                `).join('')}
               </div>
             ` : ''}
           </section>
         ` : ''}
 
-        <!-- 탭 2: 딜러비 추첨 (회차 기록 없이 단발 추첨 후 종료) -->
+        <!-- 탭 2: 딜러비 추첨 -->
         ${state.activeTab === 'dealerFee' ? `
-          <section class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 space-y-4 shadow-lg">
+          <section class="bg-slate-900/95 border border-slate-800 rounded-2xl p-4 space-y-3.5 shadow">
             <div>
-              <h2 class="text-base font-extrabold text-white">라운드 종료 딜러비 추첨</h2>
+              <h2 class="text-sm font-extrabold text-white">라운드 종료 딜러비 추첨</h2>
               <p class="text-xs text-slate-400 mt-0.5">
-                참석 인원 중 딜러(${state.dealerName || '미지정'})를 제외한 나머지 ${nonDealerAttendees.length}명 중 랜덤 2명 당첨
+                딜러(${state.dealerName || '미지정'}) 제외 ${nonDealerAttendees.length}명 중 랜덤 2명 당첨
               </p>
             </div>
 
-            <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3.5 text-xs space-y-1.5">
-              <div class="flex items-center justify-between">
-                <span class="text-slate-400">현재 딜러 (추첨 제외)</span>
-                <span class="font-bold text-amber-300">${state.dealerName ? `${state.dealerName} (D)` : '자리뽑기 전 전체 대상'}</span>
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-1.5">
+              <div class="flex justify-between">
+                <span class="text-slate-400">제외 딜러</span>
+                <span class="font-extrabold text-amber-300">${state.dealerName || '없음'}</span>
               </div>
-              <div class="flex items-center justify-between">
-                <span class="text-slate-400">추첨 대상 인원</span>
-                <span class="font-bold text-emerald-300">${nonDealerAttendees.length}명</span>
+              <div class="flex justify-between">
+                <span class="text-slate-400">추첨 대상</span>
+                <span class="font-extrabold text-emerald-300">${nonDealerAttendees.length}명</span>
               </div>
             </div>
 
             ${state.dealerFeeDone ? `
-              <div class="bg-gradient-to-br from-amber-400/15 to-emerald-500/10 border border-amber-400/50 rounded-2xl p-5 text-center space-y-3">
-                <div class="inline-block px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-extrabold">
+              <div class="bg-amber-400/10 border border-amber-400/40 rounded-2xl p-4 text-center space-y-3">
+                <span class="inline-block px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black">
                   추첨 완료 · 종료
-                </div>
-                <div class="text-sm text-slate-300 font-semibold">이번 라운드 딜러비 당첨자 (2명)</div>
-                <div class="flex items-center justify-center gap-3 pt-1">
+                </span>
+                <div class="grid grid-cols-2 gap-2.5">
                   ${state.dealerFeeWinners.map((winner, i) => `
-                    <div class="px-5 py-3 rounded-2xl bg-slate-950 border border-amber-300/60 shadow-md">
-                      <div class="text-[11px] text-amber-300 font-bold">당첨 ${i + 1}</div>
-                      <div class="text-lg font-extrabold text-white mt-0.5">${winner}</div>
+                    <div class="py-3 px-2 rounded-xl bg-slate-950 border border-amber-300/50">
+                      <div class="text-[11px] font-bold text-amber-300">당첨 ${i + 1}</div>
+                      <div class="text-base font-black text-white mt-0.5">${winner}</div>
                     </div>
                   `).join('')}
                 </div>
                 <button
                   type="button"
                   data-action="reset-dealer-fee"
-                  class="mt-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700"
+                  class="w-full h-11 rounded-xl bg-slate-800 text-white text-xs font-extrabold border border-slate-700"
                 >
-                  새 라운드 준비하기
+                  초기화
                 </button>
               </div>
             ` : `
               <button
                 type="button"
                 data-action="draw-dealer-fee"
-                class="w-full py-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg transition"
+                class="w-full h-12 rounded-2xl bg-amber-400 text-slate-950 font-black text-sm shadow active:scale-[0.99]"
               >
                 🎟️ 딜러비 2명 추첨하기
               </button>
@@ -834,16 +794,14 @@
 
         <!-- 탭 3: 맨징 계산기 -->
         ${state.activeTab === 'manjing' ? `
-          <section class="space-y-4">
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
+          <section class="space-y-3">
+            <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 shadow space-y-3">
               <div class="flex items-center justify-between">
-                <label for="totalPoolInput" class="text-sm font-bold text-amber-300">
-                  ● 총 맨징 금액 (배분할 상금)
-                </label>
+                <label for="totalPoolInput" class="text-sm font-extrabold text-amber-300">총 맨징 금액</label>
                 <button
                   type="button"
                   data-action="toggle-round100"
-                  class="px-3 py-1 rounded-full text-xs font-bold border transition ${
+                  class="px-3 py-1.5 rounded-full text-xs font-extrabold border ${
                     state.roundTo100
                       ? 'bg-amber-400/20 border-amber-400 text-amber-200'
                       : 'bg-slate-800 border-slate-700 text-slate-300'
@@ -859,75 +817,67 @@
                   type="text"
                   inputmode="numeric"
                   value="${formatNumber(pool)}"
-                  class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-2xl px-4 py-3.5 pr-12 text-right text-xl font-extrabold text-white outline-none"
+                  class="w-full h-12 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-xl px-3.5 pr-9 text-right text-lg font-black text-white outline-none"
                 />
-                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">원</span>
+                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">원</span>
               </div>
 
-              <div class="grid grid-cols-4 gap-2">
-                <button type="button" data-action="add-pool" data-amount="10000" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">+1만</button>
-                <button type="button" data-action="add-pool" data-amount="50000" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">+5만</button>
-                <button type="button" data-action="add-pool" data-amount="100000" class="py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200">+10만</button>
-                <button type="button" data-action="reset-pool" class="py-2 rounded-xl bg-rose-950/70 hover:bg-rose-900/70 text-xs font-bold text-rose-300 border border-rose-800/50">초기화</button>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" data-action="add-pool" data-amount="10000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+1만</button>
+                <button type="button" data-action="add-pool" data-amount="50000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+5만</button>
+                <button type="button" data-action="add-pool" data-amount="100000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+10만</button>
+                <button type="button" data-action="reset-pool" class="h-10 rounded-xl bg-rose-950/80 text-xs font-extrabold text-rose-300 border border-rose-800/50">초기화</button>
               </div>
             </div>
 
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
-              <div class="flex items-center justify-between text-xs text-slate-400">
-                <span class="font-bold text-slate-200">참여 멤버 마이너스 입력 (${items.length}명)</span>
-                <span>총 마이너스: <strong class="text-rose-300">${formatNumber(totalLoss)}원</strong></span>
+            <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 shadow space-y-2.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-extrabold text-white">참여 멤버 (${items.length}명)</span>
+                <span class="text-slate-400">총 마이너스 <strong class="text-rose-300">${formatNumber(totalLoss)}원</strong></span>
               </div>
 
               ${items.length === 0 ? `
-                <div class="text-center py-8 text-sm text-slate-400">
-                  위에서 오늘 참석 멤버를 체크해 주세요.
-                </div>
-              ` : `
-                <div class="space-y-2.5">
-                  ${items.map((item, idx) => `
-                    <div class="bg-slate-950/90 border border-slate-800 rounded-2xl p-3 space-y-2">
-                      <div class="flex items-center justify-between">
-                        <span class="text-sm font-extrabold text-white">${idx + 1}. ${item.name}</span>
-                        <span class="text-xs font-semibold text-slate-400">비율 ${(item.ratio * 100).toFixed(1)}%</span>
-                      </div>
-
-                      <div class="grid grid-cols-2 gap-2 items-center">
-                        <div class="relative">
-                          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-rose-400">-</span>
-                          <input
-                            type="text"
-                            inputmode="numeric"
-                            data-player-loss-id="${item.id}"
-                            value="${formatNumber(item.loss)}"
-                            class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-400 rounded-xl pl-7 pr-7 py-2 text-right text-sm font-bold text-white outline-none"
-                          />
-                          <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-500">원</span>
-                        </div>
-
-                        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-2 text-right">
-                          <div class="text-[10px] text-emerald-300/80 font-semibold">맨징 금액</div>
-                          <div class="text-sm font-extrabold text-emerald-300">+${formatNumber(item.settledAmount)}원</div>
-                        </div>
-                      </div>
+                <div class="text-center py-6 text-xs text-slate-400">위에서 참석 멤버를 선택해 주세요.</div>
+              ` : items.map((item, idx) => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-extrabold text-white">${idx + 1}. ${item.name}</span>
+                    <span class="text-xs font-bold text-slate-400">${(item.ratio * 100).toFixed(1)}%</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2 items-center">
+                    <div class="relative">
+                      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-black text-rose-400">-</span>
+                      <input
+                        type="text"
+                        inputmode="numeric"
+                        data-player-loss-id="${item.id}"
+                        value="${formatNumber(item.loss)}"
+                        class="w-full h-11 bg-slate-900 border border-slate-800 focus:border-emerald-400 rounded-xl pl-6 pr-6 text-right text-sm font-extrabold text-white outline-none"
+                      />
+                      <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-500">원</span>
                     </div>
-                  `).join('')}
+                    <div class="h-11 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 flex flex-col justify-center text-right">
+                      <span class="text-[10px] text-emerald-300/80 font-bold leading-none">맨징 금액</span>
+                      <span class="text-sm font-black text-emerald-300 leading-tight mt-0.5">+${formatNumber(item.settledAmount)}원</span>
+                    </div>
+                  </div>
                 </div>
-              `}
+              `).join('')}
 
-              <div class="grid grid-cols-2 gap-2.5 pt-2">
+              <div class="grid grid-cols-2 gap-2 pt-1">
                 <button
                   type="button"
                   data-action="copy-kakao"
-                  class="py-3 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs sm:text-sm transition"
+                  class="h-12 rounded-xl bg-amber-400 text-slate-950 font-black text-xs"
                 >
-                  ${state.copiedText ? '✓ 카톡 복사 완료' : '💬 카톡 내역 복사'}
+                  ${state.copiedText ? '✓ 복사 완료' : '💬 카톡 내역 복사'}
                 </button>
                 <button
                   type="button"
                   data-action="export-png"
-                  class="py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm transition"
+                  class="h-12 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs"
                 >
-                  ${state.exportingImage ? '저장 중...' : '🖼️ 이미지 저장 (PNG)'}
+                  ${state.exportingImage ? '저장 중...' : '🖼️ 이미지 저장'}
                 </button>
               </div>
             </div>
