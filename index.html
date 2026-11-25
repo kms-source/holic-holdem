@@ -551,7 +551,7 @@
 
               ${seatCoords.map(seat => `
                 <div
-                  style="left: ${seat.left.toFixed(1)}\%; top:${seat.top.toFixed(1)}%; transform: translate(-50%, -50%);"
+                  style="left: ${seat.left.toFixed(1)}%; top: ${seat.top.toFixed(1)}%; transform: translate(-50%, -50%);"
                   class="absolute z-10 min-w-[66px] max-w-[84px] rounded-xl px-2 py-1.5 text-center shadow-lg border ${
                     seat.isDealer
                       ? 'bg-amber-400 text-slate-950 border-amber-200 ring-2 ring-amber-300/60'
@@ -828,4 +828,346 @@
                       : 'bg-slate-950 border-slate-800 text-slate-200'
                   }">
                     <span class="text-xs font-black ${s.isDealer ? 'text-amber-300' : 'text-emerald-400'}">${s.seatLabel}</span>
-                    <span class
+                    <span class="text-sm font-extrabold">${s.name}</span>
+                  </div>
+                `).join('')}
+              </div>
+            ` : ''}
+          </section>
+        ` : ''}
+
+        ${state.activeTab === 'dealerFee' ? `
+          <section class="bg-slate-900/95 border border-slate-800 rounded-2xl p-4 space-y-3.5 shadow">
+            <div>
+              <h2 class="text-sm font-extrabold text-white">라운드 종료 딜러비 추첨</h2>
+              <p class="text-xs text-slate-400 mt-0.5">
+                딜러 및 고정 제외 인원을 뺀 ${eligibleDealerFeeAttendees.length}명 중 랜덤 2명 당첨
+              </p>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-2">
+              <div class="flex justify-between">
+                <span class="text-slate-400">현재 딜러 (제외)</span>
+                <span class="font-extrabold text-amber-300">${state.dealerName || '없음'}</span>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-slate-400">고정 딜러비 제외 멤버</span>
+                  <span class="text-[11px] ${state.isAdminUnlocked ? 'text-amber-300 font-bold' : 'text-slate-500'}">
+                    ${state.isAdminUnlocked ? '관리자 ON · 터치하여 편집' : '🔒 관리자에서 편집 가능'}
+                  </span>
+                </div>
+                <div class="flex flex-wrap gap-1.5">
+                  ${state.excludedDealerFeeMembers.length > 0
+                    ? state.excludedDealerFeeMembers.map(name => `
+                      <button
+                        type="button"
+                        data-action="toggle-dealer-fee-exclude"
+                        data-name="${name}"
+                        class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-rose-500/15 text-rose-200 border border-rose-400/40 ${
+                          state.isAdminUnlocked ? 'active:scale-95' : 'cursor-default'
+                        }"
+                      >
+                        ${name}${state.isAdminUnlocked ? ' ×' : ''}
+                      </button>
+                    `).join('')
+                    : '<span class="text-slate-500 text-xs">고정 제외 멤버 없음</span>'}
+                </div>
+              </div>
+              <div class="flex justify-between pt-1 border-t border-slate-800/80">
+                <span class="text-slate-400">실제 추첨 대상</span>
+                <span class="font-extrabold text-emerald-300">${eligibleDealerFeeAttendees.length}명</span>
+              </div>
+            </div>
+
+            ${state.isAdminUnlocked ? `
+              <div class="bg-slate-950 border border-amber-400/35 rounded-xl p-3 space-y-2">
+                <div class="text-xs font-extrabold text-amber-300">고정 제외 멤버 편집 (관리자 모드)</div>
+                <div class="flex flex-wrap gap-1.5">
+                  ${allKnownMembers.map(member => {
+                    const isExcluded = state.excludedDealerFeeMembers.includes(member);
+                    return `
+                      <button
+                        type="button"
+                        data-action="toggle-dealer-fee-exclude"
+                        data-name="${member}"
+                        class="px-2.5 py-1.5 rounded-xl text-xs font-extrabold border transition ${
+                          isExcluded
+                            ? 'bg-rose-500/20 border-rose-400 text-rose-200'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }"
+                      >
+                        ${member} ${isExcluded ? '제외 ✓' : ''}
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            ` : ''}
+
+            ${state.dealerFeeDone ? `
+              <div class="bg-amber-400/10 border border-amber-400/40 rounded-2xl p-4 text-center space-y-3">
+                <span class="inline-block px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black">
+                  추첨 완료 · 종료
+                </span>
+                <div class="grid grid-cols-2 gap-2.5">
+                  ${state.dealerFeeWinners.map((winner, i) => `
+                    <div class="py-3 px-2 rounded-xl bg-slate-950 border border-amber-300/50">
+                      <div class="text-[11px] font-bold text-amber-300">당첨 ${i + 1}</div>
+                      <div class="text-base font-black text-white mt-0.5">${winner}</div>
+                    </div>
+                  `).join('')}
+                </div>
+                <button
+                  type="button"
+                  data-action="reset-dealer-fee"
+                  class="w-full h-11 rounded-xl bg-slate-800 text-white text-xs font-extrabold border border-slate-700"
+                >
+                  초기화
+                </button>
+              </div>
+            ` : `
+              <button
+                type="button"
+                data-action="draw-dealer-fee"
+                class="w-full h-12 rounded-2xl bg-amber-400 text-slate-950 font-black text-sm shadow active:scale-[0.99]"
+              >
+                🎟️ 딜러비 2명 추첨하기
+              </button>
+            `}
+          </section>
+        ` : ''}
+
+        ${state.activeTab === 'manjing' ? `
+          <section class="space-y-3">
+            <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 shadow space-y-3">
+              <div class="flex items-center justify-between">
+                <label for="totalPoolInput" class="text-sm font-extrabold text-amber-300">총 맨징 금액</label>
+                <button
+                  type="button"
+                  data-action="toggle-round100"
+                  class="px-3 py-1.5 rounded-full text-xs font-extrabold border ${
+                    state.roundTo100
+                      ? 'bg-amber-400/20 border-amber-400 text-amber-200'
+                      : 'bg-slate-800 border-slate-700 text-slate-300'
+                  }"
+                >
+                  ${state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF'}
+                </button>
+              </div>
+
+              <div class="relative">
+                <input
+                  id="totalPoolInput"
+                  type="text"
+                  inputmode="numeric"
+                  value="${formatNumber(pool)}"
+                  class="w-full h-12 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-xl px-3.5 pr-9 text-right text-lg font-black text-white outline-none"
+                />
+                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">원</span>
+              </div>
+
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" data-action="add-pool" data-amount="10000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+1만</button>
+                <button type="button" data-action="add-pool" data-amount="50000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+5만</button>
+                <button type="button" data-action="add-pool" data-amount="100000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+10만</button>
+                <button type="button" data-action="reset-pool" class="h-10 rounded-xl bg-rose-950/80 text-xs font-extrabold text-rose-300 border border-rose-800/50">초기화</button>
+              </div>
+            </div>
+
+            <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 shadow space-y-2.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-extrabold text-white">참여 멤버 (${items.length}명)</span>
+                <span class="text-slate-400">총 마이너스 <strong class="text-rose-300">${formatNumber(totalLoss)}원</strong></span>
+              </div>
+
+              ${items.length === 0 ? `
+                <div class="text-center py-6 text-xs text-slate-400">위에서 참석 멤버를 선택해 주세요.</div>
+              ` : items.map((item, idx) => `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-extrabold text-white">${idx + 1}. ${item.name}</span>
+                    <span class="text-xs font-bold text-slate-400">${(item.ratio * 100).toFixed(1)}%</span>
+                  </div>
+
+                  <div class="grid grid-cols-12 gap-2.5 items-stretch">
+                    <!-- 왼쪽: 마이너스 금액 입력 -->
+                    <div class="col-span-6 flex flex-col justify-center bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-2">
+                      <span class="text-[11px] font-bold text-rose-300/90 mb-1">마이너스 금액</span>
+                      <div class="relative">
+                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-black text-rose-400">-</span>
+                        <input
+                          type="text"
+                          inputmode="numeric"
+                          data-player-loss-id="${item.id}"
+                          value="${formatNumber(item.loss)}"
+                          class="w-full h-11 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-lg pl-5 pr-6 text-right text-sm font-black text-white outline-none"
+                        />
+                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">원</span>
+                      </div>
+                    </div>
+
+                    <!-- 오른쪽: 위 맨징 금액 / 아래 최종 손실 금액 -->
+                    <div class="col-span-6 flex flex-col gap-1.5">
+                      <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-emerald-300/90 shrink-0">맨징 금액</span>
+                        <span class="text-sm font-black text-emerald-300 truncate">+${formatNumber(item.settledAmount)}원</span>
+                      </div>
+
+                      <div class="bg-rose-500/10 border border-rose-500/30 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-rose-300/90 shrink-0">최종 손실</span>
+                        <span class="text-sm font-black ${item.finalLoss > 0 ? 'text-rose-300' : 'text-slate-300'} truncate">-${formatNumber(item.finalLoss)}원</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+
+              <div class="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  data-action="copy-kakao"
+                  class="h-12 rounded-xl bg-amber-400 text-slate-950 font-black text-xs"
+                >
+                  ${state.copiedText ? '✓ 복사 완료' : '💬 카톡 내역 복사'}
+                </button>
+                <button
+                  type="button"
+                  data-action="export-png"
+                  class="h-12 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs"
+                >
+                  ${state.exportingImage ? '저장 중...' : '🖼️ 이미지 저장'}
+                </button>
+              </div>
+            </div>
+          </section>
+        ` : ''}
+      `;
+
+      bindEvents();
+    }
+
+    function bindEvents() {
+      const regInput = document.getElementById('newRegularInput');
+      if (regInput) {
+        regInput.addEventListener('input', (e) => {
+          state.newRegularInput = e.target.value;
+        });
+        regInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') addRegularMember();
+        });
+      }
+
+      const guestInput = document.getElementById('newGuestInput');
+      if (guestInput) {
+        guestInput.addEventListener('input', (e) => {
+          state.newGuestInput = e.target.value;
+        });
+        guestInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') addGuestMember();
+        });
+      }
+
+      const pinInput = document.getElementById('adminPinInput');
+      if (pinInput) {
+        pinInput.addEventListener('input', (e) => {
+          state.adminPinInput = e.target.value;
+        });
+        pinInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') verifyAdminPin();
+        });
+      }
+
+      const dealerSelect = document.getElementById('dealerSelectInline');
+      if (dealerSelect) {
+        dealerSelect.addEventListener('change', (e) => {
+          state.selectedDealer = e.target.value;
+        });
+      }
+
+      const poolInput = document.getElementById('totalPoolInput');
+      if (poolInput) {
+        poolInput.addEventListener('input', (e) => {
+          const val = parseDigits(e.target.value);
+          state.totalPool = val;
+          e.target.value = formatNumber(val);
+        });
+        poolInput.addEventListener('blur', () => render());
+      }
+
+      document.querySelectorAll('[data-player-loss-id]').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          const id = Number(e.target.getAttribute('data-player-loss-id'));
+          const val = parseDigits(e.target.value);
+          state.players = state.players.map(p => (p.id === id ? { ...p, loss: val } : p));
+          e.target.value = formatNumber(val);
+        });
+        input.addEventListener('blur', () => render());
+      });
+
+      document.querySelectorAll('[data-action]').forEach((el) => {
+        el.addEventListener('click', () => {
+          const action = el.getAttribute('data-action');
+          if (action === 'toggle-member') {
+            toggleAttendee(el.getAttribute('data-name'));
+          } else if (action === 'select-all-regulars') {
+            state.selectedMembers = [...state.regularMembers];
+            persistMemberState();
+            render();
+          } else if (action === 'clear-selection') {
+            state.selectedMembers = [];
+            state.guestMembers = [];
+            persistMemberState();
+            render();
+          } else if (action === 'toggle-admin-lock') {
+            if (state.isAdminUnlocked) {
+              state.isAdminUnlocked = false;
+              state.showAdminPinPrompt = false;
+              showToast('관리자 모드 종료');
+            } else {
+              state.showAdminPinPrompt = !state.showAdminPinPrompt;
+              render();
+            }
+          } else if (action === 'verify-admin-pin') {
+            verifyAdminPin();
+          } else if (action === 'revoke-regular') {
+            revokeRegularMember(el.getAttribute('data-name'));
+          } else if (action === 'toggle-dealer-fee-exclude') {
+            toggleDealerFeeExclusion(el.getAttribute('data-name'));
+          } else if (action === 'add-regular') {
+            addRegularMember();
+          } else if (action === 'add-guest') {
+            addGuestMember();
+          } else if (action === 'switch-tab') {
+            state.activeTab = el.getAttribute('data-tab');
+            render();
+          } else if (action === 'draw-seats') {
+            drawSeats();
+          } else if (action === 'draw-dealer-fee') {
+            drawDealerFeeWinners();
+          } else if (action === 'reset-dealer-fee') {
+            resetDealerFeeRound();
+          } else if (action === 'toggle-round100') {
+            state.roundTo100 = !state.roundTo100;
+            render();
+          } else if (action === 'add-pool') {
+            const amount = Number(el.getAttribute('data-amount')) || 0;
+            state.totalPool = (Number(state.totalPool) || 0) + amount;
+            render();
+          } else if (action === 'reset-pool') {
+            state.totalPool = 0;
+            state.players = state.players.map(p => ({ ...p, loss: 0 }));
+            render();
+          } else if (action === 'copy-kakao') {
+            copySettlementText();
+          } else if (action === 'export-png') {
+            exportSettlementPng();
+          }
+        });
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
