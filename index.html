@@ -7,64 +7,241 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Holic 홀덤 매니저</title>
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-  <link rel="stylesheet" as="style" crossorigin href="[https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css](https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css)" />
-  <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Pretendard', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-          },
-        }
-      }
-    }
-  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    * { box-sizing: border-box; }
     body {
+      margin: 0;
+      padding: 0;
       background-color: #090d16;
       color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       -webkit-tap-highlight-color: transparent;
       overflow-x: hidden;
     }
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
+    .app-shell {
+      width: 100%;
+      max-width: 448px;
+      margin: 0 auto;
+      padding: 14px 14px 88px;
     }
-    input[type="number"] {
-      -moz-appearance: textfield;
+    .card-box {
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     }
-    .felt-surface {
-      background: radial-gradient(ellipse at center, #155e47 0%, #0d3b2c 68%, #072219 100%);
-      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.7);
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid #1e293b;
+      border-radius: 18px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .header-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      flex-shrink: 0;
+    }
+    .badge-count {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .member-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .member-btn {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid #1e293b;
+      background: #060a13;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .member-btn.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: #34d399;
+      color: #a7f3d0;
+    }
+    .member-btn.has-revoke {
+      padding-right: 26px;
+    }
+    .revoke-x {
+      position: absolute;
+      right: 5px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(251, 113, 133, 0.45);
+      background: rgba(244, 63, 94, 0.25);
+      color: #fda4af;
+      font-size: 12px;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .tab-nav {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      padding: 6px;
+      border-radius: 18px;
+      margin-bottom: 12px;
+      position: sticky;
+      top: 8px;
+      z-index: 30;
+    }
+    .tab-btn {
+      height: 44px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .tab-btn.active-emerald {
+      background: #10b981;
+      color: #060a13;
+    }
+    .tab-btn.active-amber {
+      background: #fbbf24;
+      color: #060a13;
     }
     .table-rail {
       background: linear-gradient(145deg, #2d2419 0%, #17130f 55%, #261e15 100%);
+      border-radius: 38px;
+      padding: 10px;
       box-shadow: 0 12px 26px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(251, 191, 36, 0.3);
+    }
+    .felt-surface {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      border-radius: 30px;
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      background: radial-gradient(ellipse at center, #155e47 0%, #0d3b2c 68%, #072219 100%);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.7);
+    }
+    .seat-chip {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      min-width: 64px;
+      max-width: 82px;
+      border-radius: 12px;
+      padding: 6px 8px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid #334155;
+      color: #f8fafc;
+      z-index: 10;
+    }
+    .seat-chip.dealer {
+      background: #fbbf24;
+      border-color: #fde68a;
+      color: #060a13;
+      box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.45);
+    }
+    .manjing-split {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    .manjing-right-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-dark {
+      width: 100%;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid #1e293b;
+      background: #060a13;
+      color: #ffffff;
+      padding: 0 12px;
+      font-size: 13px;
+      outline: none;
+    }
+    .btn-primary-emerald {
+      width: 100%;
+      height: 46px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(90deg, #10b981, #2dd4bf);
+      color: #060a13;
+      font-size: 14px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .btn-amber {
+      height: 46px;
+      border: none;
+      border-radius: 16px;
+      background: #fbbf24;
+      color: #060a13;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .toast-banner {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 60;
+      background: #1e293b;
+      color: #fde047;
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
   </style>
 </head>
-<body class="min-h-screen antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
-  <div id="app" class="w-full max-w-md mx-auto px-3.5 py-4 pb-24">
-    <div class="text-center py-10 text-xs text-slate-400">Holic 홀덤 매니저 불러오는 중...</div>
-  </div>
+<body>
+  <div id="app" class="app-shell"></div>
 
   <script>
-    window.addEventListener('error', function (e) {
-      const app = document.getElementById('app');
-      if (app && !app.dataset.rendered) {
-        app.innerHTML = `
-          <div class="bg-rose-950/60 border border-rose-500/40 rounded-2xl p-4 text-xs text-rose-200 space-y-2">
-            <div class="font-bold text-sm text-white">화면 로딩 중 오류가 발생했어요</div>
-            <div>${e.message || '스크립트 실행 오류'}</div>
-            <button onclick="location.reload()" class="mt-2 px-3 py-2 rounded-xl bg-amber-400 text-slate-950 font-black">다시 불러오기</button>
-          </div>
-        `;
-      }
-    });
-
     const DEFAULT_REGULAR_MEMBERS = [
       '민석', '민겸', '서이', '진겸', '윤범', '민중', '주광', '동준', '미림',
       '중훈', '나윤', '재호', '한빈', '선수', '태현', '윤아', '영모'
@@ -77,10 +254,10 @@
     const ADMIN_PIN = '1234';
 
     const STORAGE_KEYS = {
-      regulars: 'holic_regular_members_v4',
-      selected: 'holic_selected_members_v4',
-      guests: 'holic_guest_members_v4',
-      excludedDealerFee: 'holic_excluded_dealer_fee_v4'
+      regulars: 'holic_regular_members_v5',
+      selected: 'holic_selected_members_v5',
+      guests: 'holic_guest_members_v5',
+      excludedDealerFee: 'holic_excluded_dealer_fee_v5'
     };
 
     function loadJSON(key, fallback) {
@@ -88,7 +265,7 @@
         const raw = localStorage.getItem(key);
         const parsed = raw ? JSON.parse(raw) : fallback;
         return Array.isArray(parsed) ? parsed : fallback;
-      } catch (err) {
+      } catch (e) {
         return fallback;
       }
     }
@@ -96,7 +273,7 @@
     function saveJSON(key, value) {
       try {
         localStorage.setItem(key, JSON.stringify(value));
-      } catch (err) {}
+      } catch (e) {}
     }
 
     const state = {
@@ -176,7 +353,7 @@
       window.__toastTimer = setTimeout(() => {
         state.statusMessage = '';
         render();
-      }, 2100);
+      }, 2000);
     }
 
     function persistMemberState() {
@@ -218,10 +395,10 @@
       }
       if (state.excludedDealerFeeMembers.includes(name)) {
         state.excludedDealerFeeMembers = state.excludedDealerFeeMembers.filter(m => m !== name);
-        showToast(`'${name}' 딜러비 고정 제외 해제`);
+        showToast(`'${name}' 고정 제외 해제`);
       } else {
         state.excludedDealerFeeMembers = [...state.excludedDealerFeeMembers, name];
-        showToast(`'${name}' 딜러비 고정 제외 추가`);
+        showToast(`'${name}' 고정 제외 추가`);
       }
       persistMemberState();
       render();
@@ -243,7 +420,7 @@
       const trimmed = state.newRegularInput.trim();
       if (!trimmed) return;
       if (state.regularMembers.includes(trimmed)) {
-        showToast('이미 단골 멤버에 있는 이름입니다.');
+        showToast('이미 단골 멤버에 있습니다.');
         return;
       }
       state.regularMembers = [...state.regularMembers, trimmed];
@@ -271,10 +448,10 @@
         state.isAdminUnlocked = true;
         state.showAdminPinPrompt = false;
         state.adminPinInput = '';
-        showToast('관리자 모드 ON (단골 해지 · 고정 제외 편집 가능)');
+        showToast('관리자 모드 ON');
       } else {
         state.adminPinInput = '';
-        showToast('관리자 PIN이 일치하지 않습니다.');
+        showToast('PIN이 일치하지 않습니다.');
       }
     }
 
@@ -313,7 +490,6 @@
         showToast('최소 2명 이상 체크해 주세요.');
         return;
       }
-
       const chosenDealer =
         state.selectedDealer !== '__RANDOM__' && attendees.includes(state.selectedDealer)
           ? state.selectedDealer
@@ -322,12 +498,7 @@
       const remainingPlayers = shuffleArray(attendees.filter(name => name !== chosenDealer));
       state.dealerName = chosenDealer;
       state.seatAssignments = [
-        {
-          seatNumber: 0,
-          seatLabel: 'D (딜러)',
-          name: chosenDealer,
-          isDealer: true
-        },
+        { seatNumber: 0, seatLabel: 'D (딜러)', name: chosenDealer, isDealer: true },
         ...remainingPlayers.map((name, idx) => ({
           seatNumber: idx + 1,
           seatLabel: `${idx + 1}번`,
@@ -384,13 +555,7 @@
         const exactAmount = pool * ratio;
         const settledAmount = roundSettlement(exactAmount, state.roundTo100);
         const finalLoss = Math.max(0, p.loss - settledAmount);
-        return {
-          ...p,
-          ratio,
-          exactAmount,
-          settledAmount,
-          finalLoss
-        };
+        return { ...p, ratio, exactAmount, settledAmount, finalLoss };
       });
 
       return { pool, totalLoss, items };
@@ -434,7 +599,7 @@
           state.copiedText = false;
           render();
         }, 1800);
-      } catch (err) {
+      } catch (e) {
         showToast('복사에 실패했습니다.');
       }
     }
@@ -464,11 +629,11 @@
       ctx.strokeRect(24, 24, width - 48, height - 48);
 
       ctx.fillStyle = '#fbbf24';
-      ctx.font = 'bold 34px Pretendard, sans-serif';
+      ctx.font = 'bold 34px sans-serif';
       ctx.fillText('Holic 홀덤 맨징 정산표', 56, 86);
 
       ctx.fillStyle = '#cbd5e1';
-      ctx.font = '22px Pretendard, sans-serif';
+      ctx.font = '22px sans-serif';
       ctx.fillText(
         `총 맨징: ${formatNumber(pool)}원   |   총 마이너스: ${formatNumber(totalLoss)}원   |   ${state.roundTo100 ? '100원 반올림' : '원 단위'}`,
         56,
@@ -488,20 +653,20 @@
         ctx.fillRect(56, y - 34, width - 112, 64);
 
         ctx.fillStyle = '#f8fafc';
-        ctx.font = 'bold 23px Pretendard, sans-serif';
+        ctx.font = 'bold 23px sans-serif';
         ctx.fillText(`${idx + 1}. ${item.name}`, 76, y - 2);
 
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '19px Pretendard, sans-serif';
+        ctx.font = '19px sans-serif';
         ctx.fillText(`-${formatNumber(item.loss)}원 (${(item.ratio * 100).toFixed(1)}%)`, 275, y - 2);
 
         ctx.fillStyle = '#34d399';
-        ctx.font = 'bold 24px Pretendard, sans-serif';
+        ctx.font = 'bold 24px sans-serif';
         ctx.textAlign = 'right';
         ctx.fillText(`+${formatNumber(item.settledAmount)}원`, width - 76, y - 4);
 
         ctx.fillStyle = '#fda4af';
-        ctx.font = 'bold 17px Pretendard, sans-serif';
+        ctx.font = 'bold 17px sans-serif';
         ctx.fillText(`최종손실 -${formatNumber(item.finalLoss)}원`, width - 76, y + 20);
         ctx.textAlign = 'left';
       });
@@ -520,11 +685,11 @@
       const count = assignments.length;
       if (count === 0) {
         return `
-          <div class="table-rail rounded-[36px] p-2.5 my-2">
-            <div class="felt-surface rounded-[28px] py-10 px-4 text-center border border-emerald-400/20">
-              <div class="text-xs font-extrabold tracking-wider text-amber-300">HOLDEM TABLE</div>
-              <div class="text-sm font-bold text-white mt-1">딜러를 정한 뒤 자리뽑기 실행을 눌러주세요</div>
-              <div class="text-xs text-emerald-200/75 mt-1">선택된 딜러 제외 인원이 1번부터 시계방향 배정됩니다</div>
+          <div class="table-rail" style="margin: 8px 0;">
+            <div class="felt-surface" style="height: 170px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center;">
+              <div style="font-size:11px; font-weight:800; letter-spacing:0.15em; color:#fcd34d;">HOLDEM TABLE</div>
+              <div style="font-size:14px; font-weight:800; color:#ffffff; margin-top:4px;">딜러를 정한 뒤 자리뽑기 실행을 눌러주세요</div>
+              <div style="font-size:11px; color:#a7f3d0; margin-top:4px;">딜러 다음 좌석이 1번으로 시계방향 배정됩니다</div>
             </div>
           </div>
         `;
@@ -532,41 +697,28 @@
 
       const seatCoords = assignments.map((seat, idx) => {
         const angle = -Math.PI / 2 + (2 * Math.PI * idx) / count;
-        const rx = 36;
-        const ry = 35;
-        const left = 50 + rx * Math.cos(angle);
-        const top = 50 + ry * Math.sin(angle);
+        const left = 50 + 36 * Math.cos(angle);
+        const top = 50 + 35 * Math.sin(angle);
         return { ...seat, left, top };
       });
 
       return `
-        <div class="my-2 px-1">
-          <div class="table-rail rounded-[42px] p-2.5">
-            <div class="felt-surface relative w-full h-[330px] rounded-[34px] border border-emerald-400/25">
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none text-center px-3">
-                <span class="text-[10px] font-bold tracking-[0.2em] text-amber-300/85">HOLIC HOLDEM</span>
-                <span class="text-sm font-extrabold text-white mt-0.5">딜러: ${state.dealerName}</span>
-                <span class="text-[11px] text-emerald-200/75 mt-0.5">딜러 다음 → 1번 시계방향</span>
-              </div>
-
-              ${seatCoords.map(seat => `
-                <div
-                  style="left: ${seat.left.toFixed(1)}%; top: ${seat.top.toFixed(1)}%; transform: translate(-50%, -50%);"
-                  class="absolute z-10 min-w-[66px] max-w-[84px] rounded-xl px-2 py-1.5 text-center shadow-lg border ${
-                    seat.isDealer
-                      ? 'bg-amber-400 text-slate-950 border-amber-200 ring-2 ring-amber-300/60'
-                      : 'bg-slate-900/95 text-white border-slate-700'
-                  }"
-                >
-                  <div class="text-[10px] font-extrabold leading-tight ${
-                    seat.isDealer ? 'text-slate-900' : 'text-emerald-400'
-                  }">
-                    ${seat.seatLabel}
-                  </div>
-                  <div class="text-xs font-extrabold truncate leading-tight mt-0.5">${seat.name}</div>
-                </div>
-              `).join('')}
+        <div class="table-rail" style="margin: 8px 0;">
+          <div class="felt-surface">
+            <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; padding:10px;">
+              <span style="font-size:10px; font-weight:800; letter-spacing:0.18em; color:#fcd34d;">HOLIC HOLDEM</span>
+              <span style="font-size:14px; font-weight:900; color:#ffffff; margin-top:2px;">딜러: ${state.dealerName}</span>
+              <span style="font-size:11px; color:#a7f3d0; margin-top:2px;">딜러 다음 → 1번 시계방향</span>
             </div>
+            ${seatCoords.map(seat => `
+              <div
+                style="left: ${seat.left.toFixed(1)}%; top: ${seat.top.toFixed(1)}%;"
+                class="seat-chip ${seat.isDealer ? 'dealer' : ''}"
+              >
+                <div style="font-size:10px; font-weight:900; color:${seat.isDealer ? '#060a13' : '#34d399'};">${seat.seatLabel}</div>
+                <div style="font-size:12px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">${seat.name}</div>
+              </div>
+            `).join('')}
           </div>
         </div>
       `;
@@ -580,50 +732,30 @@
       const allKnownMembers = [...new Set([...state.regularMembers, ...state.guestMembers])];
 
       const appEl = document.getElementById('app');
-      appEl.dataset.rendered = '1';
       appEl.innerHTML = `
-        ${state.statusMessage ? `
-          <div class="fixed top-3 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-amber-300 border border-amber-400/50 px-4 py-2 rounded-full text-xs font-bold shadow-xl">
-            ${state.statusMessage}
-          </div>
-        ` : ''}
+        ${state.statusMessage ? `<div class="toast-banner">${state.statusMessage}</div>` : ''}
 
-        <header class="flex items-center justify-between bg-slate-900/95 border border-slate-800 rounded-2xl px-3.5 py-2.5 mb-3 shadow">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <img
-              src="icon.png"
-              alt="Holic"
-              onerror="this.style.display='none'"
-              class="w-11 h-11 rounded-xl object-cover shrink-0 border border-amber-400/40"
-            />
-            <div class="min-w-0">
-              <h1 class="text-base font-extrabold text-white truncate">Holic 홀덤 매니저</h1>
-              <p class="text-[11px] text-slate-400 truncate">멤버 체크 후 탭으로 바로 진행</p>
+        <header class="header-bar">
+          <div class="header-left">
+            <img src="icon.png" alt="Holic" class="header-icon" onerror="this.style.display='none'" />
+            <div style="min-width:0;">
+              <div style="font-size:16px; font-weight:900; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Holic 홀덤 매니저</div>
+              <div style="font-size:11px; color:#94a3b8;">멤버 체크 후 탭으로 진행</div>
             </div>
           </div>
-          <span class="shrink-0 px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-            ${attendees.length}명 참석
-          </span>
+          <span class="badge-count">${attendees.length}명 참석</span>
         </header>
 
-        <section class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 mb-3 shadow">
-          <div class="flex items-center justify-between gap-2 mb-2.5">
-            <h2 class="text-sm font-extrabold text-white">오늘 참석 멤버</h2>
-            <div class="flex items-center gap-1.5 text-xs font-bold">
-              <button type="button" data-action="select-all-regulars" class="px-2 py-1 rounded-lg bg-slate-800 text-emerald-300 active:scale-95">
-                전체선택
-              </button>
-              <button type="button" data-action="clear-selection" class="px-2 py-1 rounded-lg bg-slate-800 text-slate-300 active:scale-95">
-                해제
-              </button>
+        <section class="card-box">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
+            <div style="font-size:14px; font-weight:900; color:#ffffff;">오늘 참석 멤버</div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:800;">
+              <button type="button" data-action="select-all-regulars" style="padding:5px 8px; border-radius:8px; border:none; background:#1e293b; color:#6ee7b7; font-weight:800; cursor:pointer;">전체선택</button>
+              <button type="button" data-action="clear-selection" style="padding:5px 8px; border-radius:8px; border:none; background:#1e293b; color:#cbd5e1; font-weight:800; cursor:pointer;">해제</button>
               <button
                 type="button"
                 data-action="toggle-admin-lock"
-                class="px-2 py-1 rounded-lg border active:scale-95 ${
-                  state.isAdminUnlocked
-                    ? 'bg-rose-500/20 border-rose-400/50 text-rose-200'
-                    : 'bg-slate-950 border-slate-700 text-amber-300'
-                }"
+                style="padding:5px 8px; border-radius:8px; border:1px solid ${state.isAdminUnlocked ? 'rgba(251,113,133,0.5)' : '#334155'}; background:${state.isAdminUnlocked ? 'rgba(244,63,94,0.2)' : '#060a13'}; color:${state.isAdminUnlocked ? '#fda4af' : '#fcd34d'}; font-weight:800; cursor:pointer;"
               >
                 ${state.isAdminUnlocked ? '관리자 ON' : '🔒 관리자'}
               </button>
@@ -631,63 +763,42 @@
           </div>
 
           ${state.showAdminPinPrompt && !state.isAdminUnlocked ? `
-            <div class="mb-2.5 p-2.5 rounded-xl bg-slate-950 border border-amber-400/40 flex items-center gap-2">
+            <div style="display:flex; gap:8px; margin-bottom:10px; padding:8px; border-radius:12px; background:#060a13; border:1px solid rgba(251,191,36,0.4);">
               <input
                 type="password"
                 id="adminPinInput"
                 inputmode="numeric"
                 value="${state.adminPinInput}"
-                placeholder="관리자 PIN 입력"
-                class="flex-1 min-w-0 h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white outline-none"
+                placeholder="관리자 PIN (1234)"
+                class="input-dark"
+                style="height:36px; flex:1;"
               />
-              <button
-                type="button"
-                data-action="verify-admin-pin"
-                class="h-9 px-3 rounded-lg bg-amber-400 text-slate-950 text-xs font-black"
-              >
-                확인
-              </button>
+              <button type="button" data-action="verify-admin-pin" style="height:36px; padding:0 14px; border-radius:10px; border:none; background:#fbbf24; color:#060a13; font-size:12px; font-weight:900; cursor:pointer;">확인</button>
             </div>
           ` : ''}
 
-          <div class="flex flex-wrap gap-1.5 mb-2.5 min-h-[28px]">
-            ${attendees.length > 0 ? attendees.map(name => `
-              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-200 border border-emerald-500/30">
-                ${name}
-              </span>
-            `).join('') : '<span class="text-xs text-slate-500 py-1">참석 멤버를 터치해 선택하세요.</span>'}
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; min-height:26px;">
+            ${attendees.length > 0
+              ? attendees.map(name => `<span style="padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; background:rgba(16,185,129,0.16); color:#a7f3d0; border:1px solid rgba(16,185,129,0.3);">${name}</span>`).join('')
+              : `<span style="font-size:12px; color:#64748b;">참석 멤버를 터치해 선택하세요.</span>`}
           </div>
 
-          <div class="grid grid-cols-3 gap-2 mb-3">
+          <div class="member-grid">
             ${state.regularMembers.map(member => {
               const checked = state.selectedMembers.includes(member);
               return `
-                <div class="relative flex items-center">
+                <div style="position:relative; display:flex; align-items:center;">
                   <button
                     type="button"
                     data-action="toggle-member"
                     data-name="${member}"
-                    class="w-full min-h-[42px] ${state.isAdminUnlocked ? 'pr-7 pl-2.5' : 'px-2.5'} py-2 rounded-xl text-sm font-extrabold border flex items-center justify-between active:scale-95 transition ${
-                      checked
-                        ? 'bg-emerald-500/20 border-emerald-400 text-emerald-200'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
-                    }"
+                    class="member-btn ${checked ? 'active' : ''} ${state.isAdminUnlocked ? 'has-revoke' : ''}"
                   >
-                    <span class="truncate">${member}</span>
-                    <span class="text-xs font-black ml-1 ${checked ? 'text-emerald-300' : 'text-slate-600'}">
-                      ${checked ? '✓' : '+'}
-                    </span>
+                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${member}</span>
+                    <span style="font-size:12px; font-weight:900; color:${checked ? '#6ee7b7' : '#475569'};">${checked ? '✓' : '+'}</span>
                   </button>
                   ${state.isAdminUnlocked ? `
-                    <button
-                      type="button"
-                      data-action="revoke-regular"
-                      data-name="${member}"
-                      title="${member} 단골 해지"
-                      class="absolute right-1.5 w-5 h-5 rounded-full bg-rose-500/25 hover:bg-rose-500/40 text-rose-300 text-xs font-black flex items-center justify-center border border-rose-400/40"
-                    >
-                      ×
-                    </button>
+                    <button type="button" data-action="revoke-regular" data-name="${member}" class="revoke-x" title="${member} 단골 해지">×</button>
                   ` : ''}
                 </div>
               `;
@@ -695,16 +806,11 @@
           </div>
 
           ${state.guestMembers.length > 0 ? `
-            <div class="mb-3">
-              <div class="text-[11px] font-bold text-amber-300 mb-1.5">오늘 추가 참가자</div>
-              <div class="flex flex-wrap gap-1.5">
+            <div style="margin-bottom:10px;">
+              <div style="font-size:11px; font-weight:800; color:#fcd34d; margin-bottom:6px;">오늘 추가 참가자</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
                 ${state.guestMembers.map(guest => `
-                  <button
-                    type="button"
-                    data-action="toggle-member"
-                    data-name="${guest}"
-                    class="px-3 py-1.5 rounded-full text-xs font-extrabold bg-amber-400/20 text-amber-200 border border-amber-400/50"
-                  >
+                  <button type="button" data-action="toggle-member" data-name="${guest}" style="padding:5px 10px; border-radius:999px; border:1px solid rgba(251,191,36,0.5); background:rgba(251,191,36,0.18); color:#fde68a; font-size:12px; font-weight:800; cursor:pointer;">
                     ${guest} ×
                   </button>
                 `).join('')}
@@ -712,123 +818,49 @@
             </div>
           ` : ''}
 
-          <div class="space-y-2 pt-2.5 border-t border-slate-800">
-            <div class="flex gap-2">
-              <input
-                type="text"
-                id="newRegularInput"
-                value="${state.newRegularInput}"
-                placeholder="단골 멤버 이름 추가"
-                class="flex-1 min-w-0 h-11 bg-slate-950 border border-slate-800 focus:border-emerald-400 rounded-xl px-3 text-sm text-white placeholder-slate-500 outline-none"
-              />
-              <button
-                type="button"
-                data-action="add-regular"
-                class="shrink-0 h-11 px-4 rounded-xl bg-slate-800 text-emerald-300 text-xs font-extrabold border border-slate-700 active:scale-95"
-              >
-                단골등록
-              </button>
+          <div style="display:flex; flex-direction:column; gap:8px; padding-top:10px; border-top:1px solid #1e293b;">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="newRegularInput" value="${state.newRegularInput}" placeholder="단골 멤버 이름 추가" class="input-dark" style="flex:1;" />
+              <button type="button" data-action="add-regular" style="height:42px; padding:0 14px; border-radius:12px; border:1px solid #334155; background:#1e293b; color:#6ee7b7; font-size:12px; font-weight:900; white-space:nowrap; cursor:pointer;">단골등록</button>
             </div>
-            <div class="flex gap-2">
-              <input
-                type="text"
-                id="newGuestInput"
-                value="${state.newGuestInput}"
-                placeholder="처음 온 추가 참가자 입력"
-                class="flex-1 min-w-0 h-11 bg-slate-950 border border-slate-800 focus:border-amber-400 rounded-xl px-3 text-sm text-white placeholder-slate-500 outline-none"
-              />
-              <button
-                type="button"
-                data-action="add-guest"
-                class="shrink-0 h-11 px-4 rounded-xl bg-amber-400 text-slate-950 text-xs font-black active:scale-95"
-              >
-                참가추가
-              </button>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="newGuestInput" value="${state.newGuestInput}" placeholder="처음 온 추가 참가자 입력" class="input-dark" style="flex:1;" />
+              <button type="button" data-action="add-guest" style="height:42px; padding:0 14px; border-radius:12px; border:none; background:#fbbf24; color:#060a13; font-size:12px; font-weight:900; white-space:nowrap; cursor:pointer;">참가추가</button>
             </div>
           </div>
         </section>
 
-        <nav class="grid grid-cols-3 gap-2 bg-slate-900 border border-slate-800 p-1.5 rounded-2xl mb-3 sticky top-2 z-30 shadow-lg">
-          <button
-            type="button"
-            data-action="switch-tab"
-            data-tab="seats"
-            class="h-11 rounded-xl text-xs font-extrabold transition ${
-              state.activeTab === 'seats'
-                ? 'bg-emerald-500 text-slate-950'
-                : 'text-slate-300'
-            }"
-          >
-            🪑 자리뽑기
-          </button>
-          <button
-            type="button"
-            data-action="switch-tab"
-            data-tab="dealerFee"
-            class="h-11 rounded-xl text-xs font-extrabold transition ${
-              state.activeTab === 'dealerFee'
-                ? 'bg-amber-400 text-slate-950'
-                : 'text-slate-300'
-            }"
-          >
-            🎟️ 딜러비
-          </button>
-          <button
-            type="button"
-            data-action="switch-tab"
-            data-tab="manjing"
-            class="h-11 rounded-xl text-xs font-extrabold transition ${
-              state.activeTab === 'manjing'
-                ? 'bg-emerald-500 text-slate-950'
-                : 'text-slate-300'
-            }"
-          >
-            💰 맨징
-          </button>
+        <nav class="tab-nav">
+          <button type="button" data-action="switch-tab" data-tab="seats" class="tab-btn ${state.activeTab === 'seats' ? 'active-emerald' : ''}">🪑 자리뽑기</button>
+          <button type="button" data-action="switch-tab" data-tab="dealerFee" class="tab-btn ${state.activeTab === 'dealerFee' ? 'active-amber' : ''}">🎟️ 딜러비</button>
+          <button type="button" data-action="switch-tab" data-tab="manjing" class="tab-btn ${state.activeTab === 'manjing' ? 'active-emerald' : ''}">💰 맨징</button>
         </nav>
 
         ${state.activeTab === 'seats' ? `
-          <section class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 space-y-3 shadow">
-            <div>
-              <h2 class="text-sm font-extrabold text-white">홀덤 테이블 자리뽑기</h2>
-              <p class="text-[11px] text-slate-400">
-                총 ${attendees.length}석 · 딜러 지정 시 딜러 제외 ${Math.max(0, attendees.length - 1)}명이 1번부터 배정됩니다
-              </p>
+          <section class="card-box">
+            <div style="font-size:14px; font-weight:900; color:#ffffff;">홀덤 테이블 자리뽑기</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px; margin-bottom:6px;">
+              총 ${attendees.length}석 · 딜러 지정 시 딜러 제외 ${Math.max(0, attendees.length - 1)}명이 1번부터 배정됩니다
             </div>
 
             ${renderPokerTable(state.seatAssignments)}
 
-            <div class="flex items-stretch gap-2">
-              <select
-                id="dealerSelectInline"
-                aria-label="딜러 선택"
-                class="w-36 shrink-0 h-12 bg-slate-950 border border-amber-400/50 focus:border-amber-400 rounded-2xl px-3 text-xs font-extrabold text-amber-200 outline-none"
-              >
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <select id="dealerSelectInline" style="width:132px; height:46px; border-radius:16px; border:1px solid rgba(251,191,36,0.5); background:#060a13; color:#fde68a; font-size:12px; font-weight:900; padding:0 10px; flex-shrink:0;">
                 <option value="__RANDOM__" ${state.selectedDealer === '__RANDOM__' ? 'selected' : ''}>딜러: 랜덤</option>
-                ${attendees.map(name => `
-                  <option value="${name}" ${state.selectedDealer === name ? 'selected' : ''}>딜러: ${name}</option>
-                `).join('')}
+                ${attendees.map(name => `<option value="${name}" ${state.selectedDealer === name ? 'selected' : ''}>딜러: ${name}</option>`).join('')}
               </select>
-
-              <button
-                type="button"
-                data-action="draw-seats"
-                class="flex-1 min-w-0 h-12 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-sm shadow active:scale-[0.99]"
-              >
+              <button type="button" data-action="draw-seats" class="btn-primary-emerald" style="flex:1;">
                 🎲 자리뽑기 실행 (${attendees.length}명)
               </button>
             </div>
 
             ${state.seatAssignments.length > 0 ? `
-              <div class="grid grid-cols-2 gap-2 pt-1">
+              <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:12px;">
                 ${state.seatAssignments.map(s => `
-                  <div class="flex items-center justify-between px-3 py-2.5 rounded-xl border ${
-                    s.isDealer
-                      ? 'bg-amber-400/15 border-amber-400/50 text-amber-200'
-                      : 'bg-slate-950 border-slate-800 text-slate-200'
-                  }">
-                    <span class="text-xs font-black ${s.isDealer ? 'text-amber-300' : 'text-emerald-400'}">${s.seatLabel}</span>
-                    <span class="text-sm font-extrabold">${s.name}</span>
+                  <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid ${s.isDealer ? 'rgba(251,191,36,0.5)' : '#1e293b'}; background:${s.isDealer ? 'rgba(251,191,36,0.14)' : '#060a13'};">
+                    <span style="font-size:12px; font-weight:900; color:${s.isDealer ? '#fcd34d' : '#34d399'};">${s.seatLabel}</span>
+                    <span style="font-size:13px; font-weight:900; color:#ffffff;">${s.name}</span>
                   </div>
                 `).join('')}
               </div>
@@ -837,66 +869,46 @@
         ` : ''}
 
         ${state.activeTab === 'dealerFee' ? `
-          <section class="bg-slate-900/95 border border-slate-800 rounded-2xl p-4 space-y-3.5 shadow">
-            <div>
-              <h2 class="text-sm font-extrabold text-white">라운드 종료 딜러비 추첨</h2>
-              <p class="text-xs text-slate-400 mt-0.5">
-                딜러 및 고정 제외 인원을 뺀 ${eligibleDealerFeeAttendees.length}명 중 랜덤 2명 당첨
-              </p>
+          <section class="card-box">
+            <div style="font-size:14px; font-weight:900; color:#ffffff;">라운드 종료 딜러비 추첨</div>
+            <div style="font-size:12px; color:#94a3b8; margin-top:2px; margin-bottom:10px;">
+              딜러(${state.dealerName || '미지정'}) 및 고정 제외 인원 외 ${eligibleDealerFeeAttendees.length}명 중 랜덤 2명 당첨
             </div>
 
-            <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-2">
-              <div class="flex justify-between">
-                <span class="text-slate-400">현재 딜러 (제외)</span>
-                <span class="font-extrabold text-amber-300">${state.dealerName || '없음'}</span>
+            <div style="background:#060a13; border:1px solid #1e293b; border-radius:14px; padding:12px; font-size:12px; margin-bottom:12px;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="color:#94a3b8;">현재 딜러 (제외)</span>
+                <span style="font-weight:900; color:#fcd34d;">${state.dealerName || '없음'}</span>
               </div>
-              <div>
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-slate-400">고정 딜러비 제외 멤버</span>
-                  <span class="text-[11px] ${state.isAdminUnlocked ? 'text-amber-300 font-bold' : 'text-slate-500'}">
-                    ${state.isAdminUnlocked ? '관리자 ON · 터치하여 편집' : '🔒 관리자에서 편집 가능'}
-                  </span>
-                </div>
-                <div class="flex flex-wrap gap-1.5">
-                  ${state.excludedDealerFeeMembers.length > 0
-                    ? state.excludedDealerFeeMembers.map(name => `
-                      <button
-                        type="button"
-                        data-action="toggle-dealer-fee-exclude"
-                        data-name="${name}"
-                        class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-rose-500/15 text-rose-200 border border-rose-400/40 ${
-                          state.isAdminUnlocked ? 'active:scale-95' : 'cursor-default'
-                        }"
-                      >
-                        ${name}${state.isAdminUnlocked ? ' ×' : ''}
-                      </button>
-                    `).join('')
-                    : '<span class="text-slate-500 text-xs">고정 제외 멤버 없음</span>'}
-                </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="color:#94a3b8;">고정 딜러비 제외 멤버</span>
+                <span style="font-size:11px; color:${state.isAdminUnlocked ? '#fcd34d' : '#64748b'}; font-weight:800;">
+                  ${state.isAdminUnlocked ? '관리자 ON · 터치하여 편집' : '🔒 관리자에서 편집 가능'}
+                </span>
               </div>
-              <div class="flex justify-between pt-1 border-t border-slate-800/80">
-                <span class="text-slate-400">실제 추첨 대상</span>
-                <span class="font-extrabold text-emerald-300">${eligibleDealerFeeAttendees.length}명</span>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
+                ${state.excludedDealerFeeMembers.length > 0
+                  ? state.excludedDealerFeeMembers.map(name => `
+                    <button type="button" data-action="toggle-dealer-fee-exclude" data-name="${name}" style="padding:4px 10px; border-radius:999px; border:1px solid rgba(251,113,133,0.45); background:rgba(244,63,94,0.16); color:#fda4af; font-size:12px; font-weight:800; cursor:pointer;">
+                      ${name}${state.isAdminUnlocked ? ' ×' : ''}
+                    </button>
+                  `).join('')
+                  : `<span style="color:#64748b; font-size:12px;">고정 제외 멤버 없음</span>`}
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid #1e293b;">
+                <span style="color:#94a3b8;">실제 추첨 대상</span>
+                <span style="font-weight:900; color:#34d399;">${eligibleDealerFeeAttendees.length}명</span>
               </div>
             </div>
 
             ${state.isAdminUnlocked ? `
-              <div class="bg-slate-950 border border-amber-400/35 rounded-xl p-3 space-y-2">
-                <div class="text-xs font-extrabold text-amber-300">고정 제외 멤버 편집 (관리자 모드)</div>
-                <div class="flex flex-wrap gap-1.5">
+              <div style="background:#060a13; border:1px solid rgba(251,191,36,0.4); border-radius:14px; padding:12px; margin-bottom:12px;">
+                <div style="font-size:12px; font-weight:900; color:#fcd34d; margin-bottom:8px;">고정 제외 멤버 편집 (관리자 모드)</div>
+                <div style="display:flex; flex-wrap:wrap; gap:6px;">
                   ${allKnownMembers.map(member => {
                     const isExcluded = state.excludedDealerFeeMembers.includes(member);
                     return `
-                      <button
-                        type="button"
-                        data-action="toggle-dealer-fee-exclude"
-                        data-name="${member}"
-                        class="px-2.5 py-1.5 rounded-xl text-xs font-extrabold border transition ${
-                          isExcluded
-                            ? 'bg-rose-500/20 border-rose-400 text-rose-200'
-                            : 'bg-slate-900 border-slate-800 text-slate-400'
-                        }"
-                      >
+                      <button type="button" data-action="toggle-dealer-fee-exclude" data-name="${member}" style="padding:6px 10px; border-radius:10px; border:1px solid ${isExcluded ? '#fb7185' : '#1e293b'}; background:${isExcluded ? 'rgba(244,63,94,0.2)' : '#0f172a'}; color:${isExcluded ? '#fecdd3' : '#94a3b8'}; font-size:12px; font-weight:800; cursor:pointer;">
                         ${member} ${isExcluded ? '제외 ✓' : ''}
                       </button>
                     `;
@@ -906,139 +918,97 @@
             ` : ''}
 
             ${state.dealerFeeDone ? `
-              <div class="bg-amber-400/10 border border-amber-400/40 rounded-2xl p-4 text-center space-y-3">
-                <span class="inline-block px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black">
-                  추첨 완료 · 종료
-                </span>
-                <div class="grid grid-cols-2 gap-2.5">
+              <div style="background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.45); border-radius:16px; padding:16px; text-align:center;">
+                <span style="display:inline-block; padding:4px 12px; border-radius:999px; background:#fbbf24; color:#060a13; font-size:12px; font-weight:900; margin-bottom:10px;">추첨 완료 · 종료</span>
+                <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; margin-bottom:12px;">
                   ${state.dealerFeeWinners.map((winner, i) => `
-                    <div class="py-3 px-2 rounded-xl bg-slate-950 border border-amber-300/50">
-                      <div class="text-[11px] font-bold text-amber-300">당첨 ${i + 1}</div>
-                      <div class="text-base font-black text-white mt-0.5">${winner}</div>
+                    <div style="background:#060a13; border:1px solid rgba(252,211,77,0.5); border-radius:12px; padding:12px 8px;">
+                      <div style="font-size:11px; font-weight:800; color:#fcd34d;">당첨 ${i + 1}</div>
+                      <div style="font-size:16px; font-weight:900; color:#ffffff; margin-top:4px;">${winner}</div>
                     </div>
                   `).join('')}
                 </div>
-                <button
-                  type="button"
-                  data-action="reset-dealer-fee"
-                  class="w-full h-11 rounded-xl bg-slate-800 text-white text-xs font-extrabold border border-slate-700"
-                >
-                  초기화
-                </button>
+                <button type="button" data-action="reset-dealer-fee" style="width:100%; height:42px; border-radius:12px; border:1px solid #334155; background:#1e293b; color:#ffffff; font-size:12px; font-weight:900; cursor:pointer;">초기화</button>
               </div>
             ` : `
-              <button
-                type="button"
-                data-action="draw-dealer-fee"
-                class="w-full h-12 rounded-2xl bg-amber-400 text-slate-950 font-black text-sm shadow active:scale-[0.99]"
-              >
-                🎟️ 딜러비 2명 추첨하기
-              </button>
+              <button type="button" data-action="draw-dealer-fee" class="btn-amber" style="width:100%;">🎟️ 딜러비 2명 추첨하기</button>
             `}
           </section>
         ` : ''}
 
         ${state.activeTab === 'manjing' ? `
-          <section class="space-y-3">
-            <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 shadow space-y-3">
-              <div class="flex items-center justify-between">
-                <label for="totalPoolInput" class="text-sm font-extrabold text-amber-300">총 맨징 금액</label>
-                <button
-                  type="button"
-                  data-action="toggle-round100"
-                  class="px-3 py-1.5 rounded-full text-xs font-extrabold border ${
-                    state.roundTo100
-                      ? 'bg-amber-400/20 border-amber-400 text-amber-200'
-                      : 'bg-slate-800 border-slate-700 text-slate-300'
-                  }"
-                >
-                  ${state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF'}
-                </button>
-              </div>
-
-              <div class="relative">
-                <input
-                  id="totalPoolInput"
-                  type="text"
-                  inputmode="numeric"
-                  value="${formatNumber(pool)}"
-                  class="w-full h-12 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-xl px-3.5 pr-9 text-right text-lg font-black text-white outline-none"
-                />
-                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">원</span>
-              </div>
-
-              <div class="grid grid-cols-4 gap-1.5">
-                <button type="button" data-action="add-pool" data-amount="10000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+1만</button>
-                <button type="button" data-action="add-pool" data-amount="50000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+5만</button>
-                <button type="button" data-action="add-pool" data-amount="100000" class="h-10 rounded-xl bg-slate-800 text-xs font-extrabold text-slate-200">+10만</button>
-                <button type="button" data-action="reset-pool" class="h-10 rounded-xl bg-rose-950/80 text-xs font-extrabold text-rose-300 border border-rose-800/50">초기화</button>
-              </div>
+          <section class="card-box">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <span style="font-size:14px; font-weight:900; color:#fcd34d;">총 맨징 금액</span>
+              <button type="button" data-action="toggle-round100" style="padding:6px 12px; border-radius:999px; border:1px solid ${state.roundTo100 ? '#fbbf24' : '#334155'}; background:${state.roundTo100 ? 'rgba(251,191,36,0.2)' : '#1e293b'}; color:${state.roundTo100 ? '#fde68a' : '#cbd5e1'}; font-size:12px; font-weight:800; cursor:pointer;">
+                ${state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF'}
+              </button>
             </div>
 
-            <div class="bg-slate-900/95 border border-slate-800 rounded-2xl p-3.5 shadow space-y-2.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-extrabold text-white">참여 멤버 (${items.length}명)</span>
-                <span class="text-slate-400">총 마이너스 <strong class="text-rose-300">${formatNumber(totalLoss)}원</strong></span>
-              </div>
+            <div style="position:relative; margin-bottom:8px;">
+              <input id="totalPoolInput" type="text" inputmode="numeric" value="${formatNumber(pool)}" class="input-dark" style="height:46px; padding-right:34px; text-align:right; font-size:18px; font-weight:900;" />
+              <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:800; color:#94a3b8;">원</span>
+            </div>
 
-              ${items.length === 0 ? `
-                <div class="text-center py-6 text-xs text-slate-400">위에서 참석 멤버를 선택해 주세요.</div>
-              ` : items.map((item, idx) => `
-                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2">
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-extrabold text-white">${idx + 1}. ${item.name}</span>
-                    <span class="text-xs font-bold text-slate-400">${(item.ratio * 100).toFixed(1)}%</span>
+            <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; margin-bottom:14px;">
+              <button type="button" data-action="add-pool" data-amount="10000" style="height:38px; border-radius:10px; border:none; background:#1e293b; color:#e2e8f0; font-size:12px; font-weight:800; cursor:pointer;">+1만</button>
+              <button type="button" data-action="add-pool" data-amount="50000" style="height:38px; border-radius:10px; border:none; background:#1e293b; color:#e2e8f0; font-size:12px; font-weight:800; cursor:pointer;">+5만</button>
+              <button type="button" data-action="add-pool" data-amount="100000" style="height:38px; border-radius:10px; border:none; background:#1e293b; color:#e2e8f0; font-size:12px; font-weight:800; cursor:pointer;">+10만</button>
+              <button type="button" data-action="reset-pool" style="height:38px; border-radius:10px; border:1px solid rgba(244,63,94,0.45); background:rgba(136,19,55,0.55); color:#fda4af; font-size:12px; font-weight:800; cursor:pointer;">초기화</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px;">
+              <span style="font-weight:900; color:#ffffff;">참여 멤버 (${items.length}명)</span>
+              <span style="color:#94a3b8;">총 마이너스 <strong style="color:#fda4af;">${formatNumber(totalLoss)}원</strong></span>
+            </div>
+
+            ${items.length === 0
+              ? `<div style="text-align:center; padding:24px 0; font-size:12px; color:#94a3b8;">위에서 참석 멤버를 선택해 주세요.</div>`
+              : items.map((item, idx) => `
+                <div style="background:#060a13; border:1px solid #1e293b; border-radius:14px; padding:12px; margin-bottom:8px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:13px; font-weight:900; color:#ffffff;">${idx + 1}. ${item.name}</span>
+                    <span style="font-size:12px; font-weight:800; color:#94a3b8;">${(item.ratio * 100).toFixed(1)}%</span>
                   </div>
 
-                  <div class="grid grid-cols-12 gap-2.5 items-stretch">
-                    <!-- 왼쪽: 마이너스 금액 입력 -->
-                    <div class="col-span-6 flex flex-col justify-center bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-2">
-                      <span class="text-[11px] font-bold text-rose-300/90 mb-1">마이너스 금액</span>
-                      <div class="relative">
-                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-black text-rose-400">-</span>
+                  <div class="manjing-split">
+                    <div style="background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:10px; display:flex; flex-direction:column; justify-content:center;">
+                      <span style="font-size:11px; font-weight:800; color:#fda4af; margin-bottom:6px;">마이너스 금액</span>
+                      <div style="position:relative;">
+                        <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:900; color:#fb7185;">-</span>
                         <input
                           type="text"
                           inputmode="numeric"
                           data-player-loss-id="${item.id}"
                           value="${formatNumber(item.loss)}"
-                          class="w-full h-11 bg-slate-950 border border-slate-700 focus:border-emerald-400 rounded-lg pl-5 pr-6 text-right text-sm font-black text-white outline-none"
+                          class="input-dark"
+                          style="height:42px; padding-left:20px; padding-right:24px; text-align:right; font-size:14px; font-weight:900;"
                         />
-                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">원</span>
+                        <span style="position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:11px; color:#64748b;">원</span>
                       </div>
                     </div>
 
-                    <!-- 오른쪽: 위 맨징 금액 / 아래 최종 손실 금액 -->
-                    <div class="col-span-6 flex flex-col gap-1.5">
-                      <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
-                        <span class="text-xs font-bold text-emerald-300/90 shrink-0">맨징 금액</span>
-                        <span class="text-sm font-black text-emerald-300 truncate">+${formatNumber(item.settledAmount)}원</span>
+                    <div class="manjing-right-stack">
+                      <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); border-radius:12px; padding:9px 10px; display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                        <span style="font-size:12px; font-weight:800; color:#6ee7b7; white-space:nowrap;">맨징 금액</span>
+                        <span style="font-size:14px; font-weight:900; color:#6ee7b7; white-space:nowrap;">+${formatNumber(item.settledAmount)}원</span>
                       </div>
-
-                      <div class="bg-rose-500/10 border border-rose-500/30 rounded-xl px-3 py-2 flex items-center justify-between gap-2">
-                        <span class="text-xs font-bold text-rose-300/90 shrink-0">최종 손실</span>
-                        <span class="text-sm font-black ${item.finalLoss > 0 ? 'text-rose-300' : 'text-slate-300'} truncate">-${formatNumber(item.finalLoss)}원</span>
+                      <div style="background:rgba(244,63,94,0.12); border:1px solid rgba(251,113,133,0.35); border-radius:12px; padding:9px 10px; display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                        <span style="font-size:12px; font-weight:800; color:#fda4af; white-space:nowrap;">최종 손실</span>
+                        <span style="font-size:14px; font-weight:900; color:${item.finalLoss > 0 ? '#fda4af' : '#cbd5e1'}; white-space:nowrap;">-${formatNumber(item.finalLoss)}원</span>
                       </div>
                     </div>
                   </div>
                 </div>
               `).join('')}
 
-              <div class="grid grid-cols-2 gap-2 pt-1">
-                <button
-                  type="button"
-                  data-action="copy-kakao"
-                  class="h-12 rounded-xl bg-amber-400 text-slate-950 font-black text-xs"
-                >
-                  ${state.copiedText ? '✓ 복사 완료' : '💬 카톡 내역 복사'}
-                </button>
-                <button
-                  type="button"
-                  data-action="export-png"
-                  class="h-12 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs"
-                >
-                  ${state.exportingImage ? '저장 중...' : '🖼️ 이미지 저장'}
-                </button>
-              </div>
+            <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:8px;">
+              <button type="button" data-action="copy-kakao" class="btn-amber">
+                ${state.copiedText ? '✓ 복사 완료' : '💬 카톡 내역 복사'}
+              </button>
+              <button type="button" data-action="export-png" style="height:46px; border:none; border-radius:16px; background:#10b981; color:#060a13; font-size:13px; font-weight:900; cursor:pointer;">
+                ${state.exportingImage ? '저장 중...' : '🖼️ 이미지 저장'}
+              </button>
             </div>
           </section>
         ` : ''}
@@ -1050,44 +1020,30 @@
     function bindEvents() {
       const regInput = document.getElementById('newRegularInput');
       if (regInput) {
-        regInput.addEventListener('input', (e) => {
-          state.newRegularInput = e.target.value;
-        });
-        regInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') addRegularMember();
-        });
+        regInput.addEventListener('input', e => { state.newRegularInput = e.target.value; });
+        regInput.addEventListener('keydown', e => { if (e.key === 'Enter') addRegularMember(); });
       }
 
       const guestInput = document.getElementById('newGuestInput');
       if (guestInput) {
-        guestInput.addEventListener('input', (e) => {
-          state.newGuestInput = e.target.value;
-        });
-        guestInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') addGuestMember();
-        });
+        guestInput.addEventListener('input', e => { state.newGuestInput = e.target.value; });
+        guestInput.addEventListener('keydown', e => { if (e.key === 'Enter') addGuestMember(); });
       }
 
       const pinInput = document.getElementById('adminPinInput');
       if (pinInput) {
-        pinInput.addEventListener('input', (e) => {
-          state.adminPinInput = e.target.value;
-        });
-        pinInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') verifyAdminPin();
-        });
+        pinInput.addEventListener('input', e => { state.adminPinInput = e.target.value; });
+        pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') verifyAdminPin(); });
       }
 
       const dealerSelect = document.getElementById('dealerSelectInline');
       if (dealerSelect) {
-        dealerSelect.addEventListener('change', (e) => {
-          state.selectedDealer = e.target.value;
-        });
+        dealerSelect.addEventListener('change', e => { state.selectedDealer = e.target.value; });
       }
 
       const poolInput = document.getElementById('totalPoolInput');
       if (poolInput) {
-        poolInput.addEventListener('input', (e) => {
+        poolInput.addEventListener('input', e => {
           const val = parseDigits(e.target.value);
           state.totalPool = val;
           e.target.value = formatNumber(val);
@@ -1095,8 +1051,8 @@
         poolInput.addEventListener('blur', () => render());
       }
 
-      document.querySelectorAll('[data-player-loss-id]').forEach((input) => {
-        input.addEventListener('input', (e) => {
+      document.querySelectorAll('[data-player-loss-id]').forEach(input => {
+        input.addEventListener('input', e => {
           const id = Number(e.target.getAttribute('data-player-loss-id'));
           const val = parseDigits(e.target.value);
           state.players = state.players.map(p => (p.id === id ? { ...p, loss: val } : p));
@@ -1105,7 +1061,7 @@
         input.addEventListener('blur', () => render());
       });
 
-      document.querySelectorAll('[data-action]').forEach((el) => {
+      document.querySelectorAll('[data-action]').forEach(el => {
         el.addEventListener('click', () => {
           const action = el.getAttribute('data-action');
           if (action === 'toggle-member') {
