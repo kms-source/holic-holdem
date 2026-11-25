@@ -33,10 +33,10 @@
     const ADMIN_PIN = '1234';
 
     const KEYS = {
-      regulars: 'holic_reg_v7',
-      selected: 'holic_sel_v7',
-      guests: 'holic_gst_v7',
-      excluded: 'holic_exc_v7'
+      regulars: 'holic_reg_v8',
+      selected: 'holic_sel_v8',
+      guests: 'holic_gst_v8',
+      excluded: 'holic_exc_v8'
     };
 
     function loadArr(key, fallback) {
@@ -91,7 +91,7 @@
       const map = new Map(state.players.map(p => [p.name, p]));
       state.players = att.map((name, i) => {
         const prev = map.get(name);
-        return { id: prev ? prev.id : i + 1, name, loss: prev ? prev.loss : 0 };
+        return { id: 'p_' + i + '_' + encodeURIComponent(name), name, loss: prev ? prev.loss : 0 };
       });
       state.lastSig = sig;
     }
@@ -405,7 +405,7 @@
             '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">' +
             '<div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px;display:flex;flex-direction:column;justify-content:center;">' +
             '<div style="font-size:11px;font-weight:800;color:#fda4af;margin-bottom:4px;">마이너스 금액</div>' +
-            '<input type="text" inputmode="numeric" data-loss-id="' + it.id + '" value="' + fmt(it.loss) + '" style="' + inputStyle + 'height:38px;text-align:right;font-size:14px;font-weight:900;" />' +
+            '<input type="text" inputmode="numeric" data-loss-id="' + it.id + '" value="' + (it.loss ? fmt(it.loss) : '') + '" placeholder="0" style="' + inputStyle + 'height:38px;text-align:right;font-size:14px;font-weight:900;" />' +
             '</div>' +
             '<div style="display:flex;flex-direction:column;gap:6px;">' +
             '<div style="background:rgba(16,185,129,0.14);border:1px solid rgba(52,211,153,0.4);border-radius:10px;padding:8px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:11px;font-weight:800;color:#6ee7b7;">맨징 금액</span><span style="font-size:13px;font-weight:900;color:#6ee7b7;">+' + fmt(it.settled) + '원</span></div>' +
@@ -470,15 +470,14 @@
       if (dealerSel) dealerSel.onchange = e => { state.selectedDealer = e.target.value; };
       const poolInp = document.getElementById('poolInp');
       if (poolInp) {
-        poolInp.oninput = e => { const v = digits(e.target.value); state.totalPool = v; e.target.value = fmt(v); };
+        poolInp.oninput = e => { state.totalPool = digits(e.target.value); };
         poolInp.onblur = () => render();
       }
       document.querySelectorAll('[data-loss-id]').forEach(inp => {
         inp.oninput = e => {
-          const id = Number(e.target.getAttribute('data-loss-id'));
+          const id = e.target.getAttribute('data-loss-id');
           const v = digits(e.target.value);
-          state.players = state.players.map(p => p.id === id ? { ...p, loss: v } : p);
-          e.target.value = fmt(v);
+          state.players = state.players.map(p => String(p.id) === id ? { ...p, loss: v } : p);
         };
         inp.onblur = () => render();
       });
