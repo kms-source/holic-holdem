@@ -7,281 +7,55 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Holic 홀덤 매니저</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; }
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       background-color: #090d16;
       color: #f1f5f9;
-      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
       overflow-x: hidden;
     }
-    .app-shell {
-      width: 100%;
-      max-width: 448px;
-      margin: 0 auto;
-      padding: 14px 14px 88px;
-    }
-    .card-box {
-      background: rgba(15, 23, 42, 0.96);
-      border: 1px solid #1e293b;
-      border-radius: 18px;
-      padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    }
-    .header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: rgba(15, 23, 42, 0.96);
-      border: 1px solid #1e293b;
-      border-radius: 18px;
-      padding: 10px 14px;
-      margin-bottom: 12px;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-    .header-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      object-fit: cover;
-      border: 1px solid rgba(251, 191, 36, 0.45);
-      flex-shrink: 0;
-    }
-    .badge-count {
-      background: rgba(16, 185, 129, 0.18);
-      color: #6ee7b7;
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-    .member-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .member-btn {
-      width: 100%;
-      min-height: 42px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid #1e293b;
-      background: #060a13;
-      color: #94a3b8;
-      font-size: 13px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-    }
-    .member-btn.active {
-      background: rgba(16, 185, 129, 0.2);
-      border-color: #34d399;
-      color: #a7f3d0;
-    }
-    .member-btn.has-revoke {
-      padding-right: 26px;
-    }
-    .revoke-x {
-      position: absolute;
-      right: 5px;
-      width: 20px;
-      height: 20px;
-      border-radius: 999px;
-      border: 1px solid rgba(251, 113, 133, 0.45);
-      background: rgba(244, 63, 94, 0.25);
-      color: #fda4af;
-      font-size: 12px;
-      font-weight: 900;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-    .tab-nav {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      padding: 6px;
-      border-radius: 18px;
-      margin-bottom: 12px;
-      position: sticky;
-      top: 8px;
-      z-index: 30;
-    }
-    .tab-btn {
-      height: 44px;
-      border-radius: 12px;
-      border: none;
-      background: transparent;
-      color: #cbd5e1;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .tab-btn.active-emerald {
-      background: #10b981;
-      color: #060a13;
-    }
-    .tab-btn.active-amber {
-      background: #fbbf24;
-      color: #060a13;
-    }
-    .table-rail {
-      background: linear-gradient(145deg, #2d2419 0%, #17130f 55%, #261e15 100%);
-      border-radius: 38px;
-      padding: 10px;
-      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(251, 191, 36, 0.3);
-    }
-    .felt-surface {
-      position: relative;
-      width: 100%;
-      height: 320px;
-      border-radius: 30px;
-      border: 1px solid rgba(52, 211, 153, 0.25);
-      background: radial-gradient(ellipse at center, #155e47 0%, #0d3b2c 68%, #072219 100%);
-      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.7);
-    }
-    .seat-chip {
-      position: absolute;
-      transform: translate(-50%, -50%);
-      min-width: 64px;
-      max-width: 82px;
-      border-radius: 12px;
-      padding: 6px 8px;
-      text-align: center;
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid #334155;
-      color: #f8fafc;
-      z-index: 10;
-    }
-    .seat-chip.dealer {
-      background: #fbbf24;
-      border-color: #fde68a;
-      color: #060a13;
-      box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.45);
-    }
-    .manjing-split {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      align-items: stretch;
-    }
-    .manjing-right-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .input-dark {
-      width: 100%;
-      height: 42px;
-      border-radius: 12px;
-      border: 1px solid #1e293b;
-      background: #060a13;
-      color: #ffffff;
-      padding: 0 12px;
-      font-size: 13px;
-      outline: none;
-    }
-    .btn-primary-emerald {
-      width: 100%;
-      height: 46px;
-      border: none;
-      border-radius: 16px;
-      background: linear-gradient(90deg, #10b981, #2dd4bf);
-      color: #060a13;
-      font-size: 14px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-    .btn-amber {
-      height: 46px;
-      border: none;
-      border-radius: 16px;
-      background: #fbbf24;
-      color: #060a13;
-      font-size: 13px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-    .toast-banner {
-      position: fixed;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 60;
-      background: #1e293b;
-      color: #fde047;
-      border: 1px solid rgba(250, 204, 21, 0.45);
-      padding: 8px 16px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    }
+    * { box-sizing: border-box; }
   </style>
 </head>
-<body>
-  <div id="app" class="app-shell"></div>
+<body style="margin:0;padding:0;background:#090d16;color:#f1f5f9;">
+  <div id="app" style="width:100%;max-width:440px;margin:0 auto;padding:12px 12px 84px 12px;"></div>
 
   <script>
     const DEFAULT_REGULAR_MEMBERS = [
       '민석', '민겸', '서이', '진겸', '윤범', '민중', '주광', '동준', '미림',
       '중훈', '나윤', '재호', '한빈', '선수', '태현', '윤아', '영모'
     ];
-
-    const DEFAULT_EXCLUDED_DEALER_FEE_MEMBERS = [
-      '민석', '민겸', '진겸', '윤범', '한빈'
-    ];
-
+    const DEFAULT_EXCLUDED_DEALER_FEE_MEMBERS = ['민석', '민겸', '진겸', '윤범', '한빈'];
     const ADMIN_PIN = '1234';
 
-    const STORAGE_KEYS = {
-      regulars: 'holic_regular_members_v5',
-      selected: 'holic_selected_members_v5',
-      guests: 'holic_guest_members_v5',
-      excludedDealerFee: 'holic_excluded_dealer_fee_v5'
+    const KEYS = {
+      regulars: 'holic_reg_v6',
+      selected: 'holic_sel_v6',
+      guests: 'holic_gst_v6',
+      excluded: 'holic_exc_v6'
     };
 
-    function loadJSON(key, fallback) {
+    function loadArr(key, fallback) {
       try {
-        const raw = localStorage.getItem(key);
-        const parsed = raw ? JSON.parse(raw) : fallback;
-        return Array.isArray(parsed) ? parsed : fallback;
+        const v = JSON.parse(localStorage.getItem(key) || 'null');
+        return Array.isArray(v) ? v : fallback.slice();
       } catch (e) {
-        return fallback;
+        return fallback.slice();
       }
     }
 
-    function saveJSON(key, value) {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-      } catch (e) {}
+    function saveArr(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
     }
 
     const state = {
       activeTab: 'seats',
-      regularMembers: loadJSON(STORAGE_KEYS.regulars, DEFAULT_REGULAR_MEMBERS),
-      guestMembers: loadJSON(STORAGE_KEYS.guests, []),
-      selectedMembers: loadJSON(STORAGE_KEYS.selected, ['민석', '민겸', '서이', '진겸', '중훈', '나윤']),
-      excludedDealerFeeMembers: loadJSON(STORAGE_KEYS.excludedDealerFee, DEFAULT_EXCLUDED_DEALER_FEE_MEMBERS),
+      regularMembers: loadArr(KEYS.regulars, DEFAULT_REGULAR_MEMBERS),
+      guestMembers: loadArr(KEYS.guests, []),
+      selectedMembers: loadArr(KEYS.selected, ['민석', '민겸', '서이', '진겸', '중훈', '나윤']),
+      excludedDealerFeeMembers: loadArr(KEYS.excluded, DEFAULT_EXCLUDED_DEALER_FEE_MEMBERS),
       newRegularInput: '',
       newGuestInput: '',
       isAdminUnlocked: false,
@@ -295,831 +69,414 @@
       totalPool: 0,
       roundTo100: true,
       players: [],
-      lastSyncedSignature: '',
+      lastSig: '',
       copiedText: false,
-      exportingImage: false,
-      statusMessage: ''
+      toast: ''
     };
 
-    function getAllAttendees() {
-      const combined = [...state.selectedMembers, ...state.guestMembers];
-      return [...new Set(combined)].filter(name => typeof name === 'string' && name.trim().length > 0);
+    function getAttendees() {
+      return [...new Set([...state.selectedMembers, ...state.guestMembers])].filter(x => x && x.trim());
     }
 
-    function getEligibleDealerFeeAttendees() {
-      const attendees = getAllAttendees();
-      return attendees.filter(
-        name => name !== state.dealerName && !state.excludedDealerFeeMembers.includes(name)
-      );
+    function getEligibleDealerFee() {
+      return getAttendees().filter(n => n !== state.dealerName && !state.excludedDealerFeeMembers.includes(n));
     }
 
-    function syncManjingPlayers(force = false) {
-      const attendees = getAllAttendees();
-      const signature = attendees.join('|');
-      if (!force && signature === state.lastSyncedSignature && state.players.length === attendees.length) {
-        return;
-      }
-      const existingMap = new Map(state.players.map(p => [p.name, p]));
-      state.players = attendees.map((name, idx) => {
-        const prev = existingMap.get(name);
-        return {
-          id: prev ? prev.id : idx + 1,
-          name,
-          loss: prev ? prev.loss : 0
-        };
+    function syncPlayers(force) {
+      const att = getAttendees();
+      const sig = att.join('|');
+      if (!force && sig === state.lastSig && state.players.length === att.length) return;
+      const map = new Map(state.players.map(p => [p.name, p]));
+      state.players = att.map((name, i) => {
+        const prev = map.get(name);
+        return { id: prev ? prev.id : i + 1, name, loss: prev ? prev.loss : 0 };
       });
-      state.lastSyncedSignature = signature;
+      state.lastSig = sig;
     }
 
-    function formatNumber(num) {
-      const n = Number(num) || 0;
-      return n.toLocaleString('ko-KR');
+    function fmt(n) {
+      return (Number(n) || 0).toLocaleString('ko-KR');
     }
 
-    function parseDigits(val) {
-      const cleaned = String(val || '').replace(/[^0-9]/g, '');
-      return cleaned ? parseInt(cleaned, 10) : 0;
+    function digits(v) {
+      const c = String(v || '').replace(/[^0-9]/g, '');
+      return c ? parseInt(c, 10) : 0;
     }
 
-    function roundSettlement(amount, roundTo100) {
-      if (!roundTo100) return Math.round(amount);
-      return Math.round(amount / 100) * 100;
+    function roundAmt(amt, r100) {
+      return r100 ? Math.round(amt / 100) * 100 : Math.round(amt);
     }
 
-    function showToast(msg) {
-      state.statusMessage = msg;
+    function notify(msg) {
+      state.toast = msg;
       render();
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => {
-        state.statusMessage = '';
-        render();
-      }, 2000);
+      clearTimeout(window.__t);
+      window.__t = setTimeout(() => { state.toast = ''; render(); }, 1900);
     }
 
-    function persistMemberState() {
-      saveJSON(STORAGE_KEYS.regulars, state.regularMembers);
-      saveJSON(STORAGE_KEYS.guests, state.guestMembers);
-      saveJSON(STORAGE_KEYS.selected, state.selectedMembers);
-      saveJSON(STORAGE_KEYS.excludedDealerFee, state.excludedDealerFeeMembers);
-      syncManjingPlayers(true);
+    function persistAll() {
+      saveArr(KEYS.regulars, state.regularMembers);
+      saveArr(KEYS.guests, state.guestMembers);
+      saveArr(KEYS.selected, state.selectedMembers);
+      saveArr(KEYS.excluded, state.excludedDealerFeeMembers);
+      syncPlayers(true);
 
-      const attendees = getAllAttendees();
-      if (state.selectedDealer !== '__RANDOM__' && !attendees.includes(state.selectedDealer)) {
+      const att = getAttendees();
+      if (state.selectedDealer !== '__RANDOM__' && !att.includes(state.selectedDealer)) {
         state.selectedDealer = '__RANDOM__';
       }
       if (state.seatAssignments.length > 0) {
-        const currentSeatNames = state.seatAssignments.map(s => s.name);
-        const sameSet =
-          currentSeatNames.length === attendees.length &&
-          attendees.every(a => currentSeatNames.includes(a));
-        if (!sameSet) {
+        const seatNames = state.seatAssignments.map(s => s.name);
+        const same = seatNames.length === att.length && att.every(a => seatNames.includes(a));
+        if (!same) {
           state.seatAssignments = [];
           state.dealerName = '';
         }
       }
       if (state.dealerFeeWinners.length > 0) {
-        const eligible = getEligibleDealerFeeAttendees();
-        const invalidWinner = state.dealerFeeWinners.some(w => !eligible.includes(w));
-        if (invalidWinner) {
+        const elig = getEligibleDealerFee();
+        if (state.dealerFeeWinners.some(w => !elig.includes(w))) {
           state.dealerFeeWinners = [];
           state.dealerFeeDone = false;
         }
       }
     }
 
-    function toggleDealerFeeExclusion(name) {
-      if (!state.isAdminUnlocked) {
-        state.showAdminPinPrompt = true;
-        showToast('관리자 모드에서 고정 제외 멤버를 편집할 수 있습니다.');
-        return;
-      }
-      if (state.excludedDealerFeeMembers.includes(name)) {
-        state.excludedDealerFeeMembers = state.excludedDealerFeeMembers.filter(m => m !== name);
-        showToast(`'${name}' 고정 제외 해제`);
-      } else {
-        state.excludedDealerFeeMembers = [...state.excludedDealerFeeMembers, name];
-        showToast(`'${name}' 고정 제외 추가`);
-      }
-      persistMemberState();
-      render();
-    }
-
-    function toggleAttendee(name) {
-      if (state.guestMembers.includes(name)) {
-        state.guestMembers = state.guestMembers.filter(g => g !== name);
-      } else if (state.selectedMembers.includes(name)) {
-        state.selectedMembers = state.selectedMembers.filter(m => m !== name);
-      } else {
-        state.selectedMembers = [...state.selectedMembers, name];
-      }
-      persistMemberState();
-      render();
-    }
-
-    function addRegularMember() {
-      const trimmed = state.newRegularInput.trim();
-      if (!trimmed) return;
-      if (state.regularMembers.includes(trimmed)) {
-        showToast('이미 단골 멤버에 있습니다.');
-        return;
-      }
-      state.regularMembers = [...state.regularMembers, trimmed];
-      state.selectedMembers = [...new Set([...state.selectedMembers, trimmed])];
-      state.newRegularInput = '';
-      persistMemberState();
-      showToast(`'${trimmed}' 단골 추가 완료`);
-    }
-
-    function revokeRegularMember(name) {
-      if (!state.isAdminUnlocked) {
-        state.showAdminPinPrompt = true;
-        showToast('관리자 인증 후 해지할 수 있습니다.');
-        return;
-      }
-      state.regularMembers = state.regularMembers.filter(m => m !== name);
-      state.selectedMembers = state.selectedMembers.filter(m => m !== name);
-      state.excludedDealerFeeMembers = state.excludedDealerFeeMembers.filter(m => m !== name);
-      persistMemberState();
-      showToast(`단골 '${name}' 해지 완료`);
-    }
-
-    function verifyAdminPin() {
-      if (state.adminPinInput.trim() === ADMIN_PIN) {
-        state.isAdminUnlocked = true;
-        state.showAdminPinPrompt = false;
-        state.adminPinInput = '';
-        showToast('관리자 모드 ON');
-      } else {
-        state.adminPinInput = '';
-        showToast('PIN이 일치하지 않습니다.');
-      }
-    }
-
-    function addGuestMember() {
-      const trimmed = state.newGuestInput.trim();
-      if (!trimmed) return;
-      const allKnown = [...state.regularMembers, ...state.guestMembers];
-      if (allKnown.includes(trimmed)) {
-        if (!state.selectedMembers.includes(trimmed) && state.regularMembers.includes(trimmed)) {
-          state.selectedMembers = [...state.selectedMembers, trimmed];
-          persistMemberState();
-          showToast(`'${trimmed}' 참석 체크 완료`);
-          return;
-        }
-        showToast('이미 참가자 목록에 있습니다.');
-        return;
-      }
-      state.guestMembers = [...state.guestMembers, trimmed];
-      state.newGuestInput = '';
-      persistMemberState();
-      showToast(`추가 참가자 '${trimmed}' 등록 완료`);
-    }
-
-    function shuffleArray(arr) {
-      const copy = [...arr];
-      for (let i = copy.length - 1; i > 0; i--) {
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
+        [a[i], a[j]] = [a[j], a[i]];
       }
-      return copy;
+      return a;
     }
 
     function drawSeats() {
-      const attendees = getAllAttendees();
-      if (attendees.length < 2) {
-        showToast('최소 2명 이상 체크해 주세요.');
-        return;
-      }
-      const chosenDealer =
-        state.selectedDealer !== '__RANDOM__' && attendees.includes(state.selectedDealer)
-          ? state.selectedDealer
-          : attendees[Math.floor(Math.random() * attendees.length)];
-
-      const remainingPlayers = shuffleArray(attendees.filter(name => name !== chosenDealer));
-      state.dealerName = chosenDealer;
+      const att = getAttendees();
+      if (att.length < 2) { notify('최소 2명 이상 선택해 주세요.'); return; }
+      const dealer = (state.selectedDealer !== '__RANDOM__' && att.includes(state.selectedDealer))
+        ? state.selectedDealer
+        : att[Math.floor(Math.random() * att.length)];
+      const others = shuffle(att.filter(n => n !== dealer));
+      state.dealerName = dealer;
       state.seatAssignments = [
-        { seatNumber: 0, seatLabel: 'D (딜러)', name: chosenDealer, isDealer: true },
-        ...remainingPlayers.map((name, idx) => ({
-          seatNumber: idx + 1,
-          seatLabel: `${idx + 1}번`,
-          name,
-          isDealer: false
-        }))
+        { label: 'D (딜러)', name: dealer, isDealer: true },
+        ...others.map((name, idx) => ({ label: (idx + 1) + '번', name, isDealer: false }))
       ];
       state.dealerFeeWinners = [];
       state.dealerFeeDone = false;
       render();
     }
 
-    function drawDealerFeeWinners() {
-      const eligible = getEligibleDealerFeeAttendees();
-      if (eligible.length < 2) {
-        showToast('딜러 및 고정 제외 인원 외 2명 이상 필요합니다.');
-        return;
-      }
-      state.dealerFeeWinners = shuffleArray(eligible).slice(0, 2);
+    function drawDealerFee() {
+      const elig = getEligibleDealerFee();
+      if (elig.length < 2) { notify('딜러 및 고정 제외 외 2명 이상 필요합니다.'); return; }
+      state.dealerFeeWinners = shuffle(elig).slice(0, 2);
       state.dealerFeeDone = true;
       render();
     }
 
-    function resetDealerFeeRound() {
-      state.dealerFeeWinners = [];
-      state.dealerFeeDone = false;
-      render();
-    }
-
-    function calculateManjing() {
+    function calcManjing() {
       const pool = Math.max(0, Number(state.totalPool) || 0);
-      const validPlayers = state.players.map(p => ({
-        ...p,
-        loss: Math.max(0, Number(p.loss) || 0)
-      }));
-      const totalLoss = validPlayers.reduce((sum, p) => sum + p.loss, 0);
-
+      const list = state.players.map(p => ({ ...p, loss: Math.max(0, Number(p.loss) || 0) }));
+      const totalLoss = list.reduce((s, p) => s + p.loss, 0);
       if (totalLoss <= 0) {
-        return {
-          pool,
-          totalLoss: 0,
-          items: validPlayers.map(p => ({
-            ...p,
-            ratio: 0,
-            exactAmount: 0,
-            settledAmount: 0,
-            finalLoss: 0
-          }))
-        };
+        return { pool, totalLoss: 0, items: list.map(p => ({ ...p, ratio: 0, settled: 0, finalLoss: 0 })) };
       }
-
-      const items = validPlayers.map(p => {
+      const items = list.map(p => {
         const ratio = p.loss / totalLoss;
-        const exactAmount = pool * ratio;
-        const settledAmount = roundSettlement(exactAmount, state.roundTo100);
-        const finalLoss = Math.max(0, p.loss - settledAmount);
-        return { ...p, ratio, exactAmount, settledAmount, finalLoss };
+        const settled = roundAmt(pool * ratio, state.roundTo100);
+        const finalLoss = Math.max(0, p.loss - settled);
+        return { ...p, ratio, settled, finalLoss };
       });
-
       return { pool, totalLoss, items };
     }
 
-    function buildKakaoText() {
-      const { pool, totalLoss, items } = calculateManjing();
+    function copyKakao() {
+      const { pool, totalLoss, items } = calcManjing();
       const lines = [
         '🃏 [Holic] 홀덤 맨징 정산',
-        `• 총 맨징 금액: ${formatNumber(pool)}원`,
-        `• 총 마이너스 합계: ${formatNumber(totalLoss)}원`,
-        `• 반올림 기준: ${state.roundTo100 ? '100원 단위' : '원 단위'}`,
+        '• 총 맨징 금액: ' + fmt(pool) + '원',
+        '• 총 마이너스 합계: ' + fmt(totalLoss) + '원',
+        '• 반올림: ' + (state.roundTo100 ? '100원 단위' : '원 단위'),
         ''
       ];
-      items.forEach((item, index) => {
-        const pct = (item.ratio * 100).toFixed(1);
-        lines.push(
-          `${index + 1}. ${item.name} — 마이너스 ${formatNumber(item.loss)}원 (${pct}%) → 맨징 ${formatNumber(item.settledAmount)}원 / 최종손실 -${formatNumber(item.finalLoss)}원`
-        );
+      items.forEach((it, idx) => {
+        lines.push((idx + 1) + '. ' + it.name + ' - 마이너스 ' + fmt(it.loss) + '원 (' + (it.ratio * 100).toFixed(1) + '%) → 맨징 ' + fmt(it.settled) + '원 / 최종손실 -' + fmt(it.finalLoss) + '원');
       });
-      return lines.join('\n');
-    }
-
-    async function copySettlementText() {
-      const text = buildKakaoText();
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          const ta = document.createElement('textarea');
-          ta.value = text;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand('copy');
-          document.body.removeChild(ta);
-        }
-        state.copiedText = true;
-        render();
-        showToast('카톡 정산 내역 복사 완료');
-        setTimeout(() => {
-          state.copiedText = false;
-          render();
-        }, 1800);
-      } catch (e) {
-        showToast('복사에 실패했습니다.');
+      const txt = lines.join('\n');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(() => {
+          state.copiedText = true;
+          notify('카톡 정산 내역 복사 완료');
+          setTimeout(() => { state.copiedText = false; render(); }, 1600);
+        }).catch(() => notify('복사에 실패했습니다.'));
       }
     }
 
-    function exportSettlementPng() {
-      state.exportingImage = true;
-      render();
-
-      const { pool, totalLoss, items } = calculateManjing();
-      const width = 920;
-      const rowHeight = 82;
-      const height = 260 + Math.max(items.length, 1) * rowHeight;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-
-      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-      bgGrad.addColorStop(0, '#090d16');
-      bgGrad.addColorStop(1, '#111827');
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(24, 24, width - 48, height - 48);
-
-      ctx.fillStyle = '#fbbf24';
-      ctx.font = 'bold 34px sans-serif';
-      ctx.fillText('Holic 홀덤 맨징 정산표', 56, 86);
-
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '22px sans-serif';
-      ctx.fillText(
-        `총 맨징: ${formatNumber(pool)}원   |   총 마이너스: ${formatNumber(totalLoss)}원   |   ${state.roundTo100 ? '100원 반올림' : '원 단위'}`,
-        56,
-        132
-      );
-
-      ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(56, 162);
-      ctx.lineTo(width - 56, 162);
-      ctx.stroke();
-
-      items.forEach((item, idx) => {
-        const y = 212 + idx * rowHeight;
-        ctx.fillStyle = 'rgba(30, 41, 59, 0.72)';
-        ctx.fillRect(56, y - 34, width - 112, 64);
-
-        ctx.fillStyle = '#f8fafc';
-        ctx.font = 'bold 23px sans-serif';
-        ctx.fillText(`${idx + 1}. ${item.name}`, 76, y - 2);
-
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '19px sans-serif';
-        ctx.fillText(`-${formatNumber(item.loss)}원 (${(item.ratio * 100).toFixed(1)}%)`, 275, y - 2);
-
-        ctx.fillStyle = '#34d399';
-        ctx.font = 'bold 24px sans-serif';
-        ctx.textAlign = 'right';
-        ctx.fillText(`+${formatNumber(item.settledAmount)}원`, width - 76, y - 4);
-
-        ctx.fillStyle = '#fda4af';
-        ctx.font = 'bold 17px sans-serif';
-        ctx.fillText(`최종손실 -${formatNumber(item.finalLoss)}원`, width - 76, y + 20);
-        ctx.textAlign = 'left';
-      });
-
-      const link = document.createElement('a');
-      link.download = `holic-manjing-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-
-      state.exportingImage = false;
-      render();
-      showToast('PNG 이미지 저장 완료');
-    }
-
-    function renderPokerTable(assignments) {
-      const count = assignments.length;
-      if (count === 0) {
-        return `
-          <div class="table-rail" style="margin: 8px 0;">
-            <div class="felt-surface" style="height: 170px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center;">
-              <div style="font-size:11px; font-weight:800; letter-spacing:0.15em; color:#fcd34d;">HOLDEM TABLE</div>
-              <div style="font-size:14px; font-weight:800; color:#ffffff; margin-top:4px;">딜러를 정한 뒤 자리뽑기 실행을 눌러주세요</div>
-              <div style="font-size:11px; color:#a7f3d0; margin-top:4px;">딜러 다음 좌석이 1번으로 시계방향 배정됩니다</div>
-            </div>
-          </div>
-        `;
+    function renderTable(seats) {
+      if (!seats.length) {
+        return '<div style="background:#0b3326;border:3px solid #2a2117;border-radius:28px;padding:24px 12px;text-align:center;margin:8px 0;">' +
+          '<div style="font-size:11px;font-weight:800;color:#fcd34d;letter-spacing:1.5px;">HOLDEM TABLE</div>' +
+          '<div style="font-size:13px;font-weight:800;color:#fff;margin-top:4px;">딜러를 정한 뒤 자리뽑기 실행을 눌러주세요</div>' +
+          '<div style="font-size:11px;color:#a7f3d0;margin-top:3px;">딜러 다음 좌석이 1번으로 시계방향 배정됩니다</div>' +
+          '</div>';
       }
+      const n = seats.length;
+      const chips = seats.map((s, i) => {
+        const ang = -Math.PI / 2 + (2 * Math.PI * i) / n;
+        const left = (50 + 35 * Math.cos(ang)).toFixed(1);
+        const top = (50 + 34 * Math.sin(ang)).toFixed(1);
+        const bg = s.isDealer ? '#fbbf24' : '#0f172a';
+        const fg = s.isDealer ? '#060a13' : '#ffffff';
+        const sub = s.isDealer ? '#060a13' : '#34d399';
+        return '<div style="position:absolute;left:' + left + '%;top:' + top + '%;transform:translate(-50%,-50%);background:' + bg + ';color:' + fg + ';border:1px solid ' + (s.isDealer ? '#fef08a' : '#334155') + ';border-radius:10px;padding:5px 7px;min-width:60px;max-width:78px;text-align:center;z-index:10;">' +
+          '<div style="font-size:9px;font-weight:900;color:' + sub + ';line-height:1.1;">' + s.label + '</div>' +
+          '<div style="font-size:11px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;">' + s.name + '</div>' +
+          '</div>';
+      }).join('');
 
-      const seatCoords = assignments.map((seat, idx) => {
-        const angle = -Math.PI / 2 + (2 * Math.PI * idx) / count;
-        const left = 50 + 36 * Math.cos(angle);
-        const top = 50 + 35 * Math.sin(angle);
-        return { ...seat, left, top };
-      });
-
-      return `
-        <div class="table-rail" style="margin: 8px 0;">
-          <div class="felt-surface">
-            <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none; text-align:center; padding:10px;">
-              <span style="font-size:10px; font-weight:800; letter-spacing:0.18em; color:#fcd34d;">HOLIC HOLDEM</span>
-              <span style="font-size:14px; font-weight:900; color:#ffffff; margin-top:2px;">딜러: ${state.dealerName}</span>
-              <span style="font-size:11px; color:#a7f3d0; margin-top:2px;">딜러 다음 → 1번 시계방향</span>
-            </div>
-            ${seatCoords.map(seat => `
-              <div
-                style="left: ${seat.left.toFixed(1)}%; top: ${seat.top.toFixed(1)}%;"
-                class="seat-chip ${seat.isDealer ? 'dealer' : ''}"
-              >
-                <div style="font-size:10px; font-weight:900; color:${seat.isDealer ? '#060a13' : '#34d399'};">${seat.seatLabel}</div>
-                <div style="font-size:12px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;">${seat.name}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
+      return '<div style="background:#241c14;border-radius:36px;padding:8px;margin:8px 0;">' +
+        '<div style="position:relative;width:100%;height:300px;border-radius:28px;background:radial-gradient(ellipse at center,#155e47 0%,#0b3326 75%);border:1px solid rgba(52,211,153,0.25);">' +
+        '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;">' +
+        '<div style="font-size:10px;font-weight:800;color:#fcd34d;letter-spacing:1.5px;">HOLIC HOLDEM</div>' +
+        '<div style="font-size:13px;font-weight:900;color:#fff;margin-top:2px;">딜러: ' + state.dealerName + '</div>' +
+        '<div style="font-size:10px;color:#a7f3d0;margin-top:2px;">딜러 다음 → 1번 시계방향</div>' +
+        '</div>' + chips + '</div></div>';
     }
 
     function render() {
-      syncManjingPlayers();
-      const attendees = getAllAttendees();
-      const eligibleDealerFeeAttendees = getEligibleDealerFeeAttendees();
-      const { pool, totalLoss, items } = calculateManjing();
-      const allKnownMembers = [...new Set([...state.regularMembers, ...state.guestMembers])];
+      syncPlayers(false);
+      const att = getAttendees();
+      const elig = getEligibleDealerFee();
+      const { pool, totalLoss, items } = calcManjing();
+      const allKnown = [...new Set([...state.regularMembers, ...state.guestMembers])];
 
-      const appEl = document.getElementById('app');
-      appEl.innerHTML = `
-        ${state.statusMessage ? `<div class="toast-banner">${state.statusMessage}</div>` : ''}
+      const cardStyle = 'background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:12px;margin-bottom:10px;';
+      const inputStyle = 'width:100%;height:40px;border-radius:10px;border:1px solid #334155;background:#060a13;color:#ffffff;padding:0 10px;font-size:13px;';
 
-        <header class="header-bar">
-          <div class="header-left">
-            <img src="icon.png" alt="Holic" class="header-icon" onerror="this.style.display='none'" />
-            <div style="min-width:0;">
-              <div style="font-size:16px; font-weight:900; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Holic 홀덤 매니저</div>
-              <div style="font-size:11px; color:#94a3b8;">멤버 체크 후 탭으로 진행</div>
-            </div>
-          </div>
-          <span class="badge-count">${attendees.length}명 참석</span>
-        </header>
+      const memberButtons = state.regularMembers.map(m => {
+        const on = state.selectedMembers.includes(m);
+        const btnBg = on ? 'rgba(16,185,129,0.22)' : '#060a13';
+        const btnBd = on ? '#34d399' : '#1e293b';
+        const btnFg = on ? '#a7f3d0' : '#94a3b8';
+        return '<div style="position:relative;display:flex;align-items:center;">' +
+          '<button type="button" data-act="toggle" data-name="' + m + '" style="width:100%;min-height:40px;padding:6px ' + (state.isAdminUnlocked ? '24px' : '8px') + ' 6px 8px;border-radius:10px;border:1px solid ' + btnBd + ';background:' + btnBg + ';color:' + btnFg + ';font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:space-between;cursor:pointer;">' +
+          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + m + '</span>' +
+          '<span style="font-size:11px;font-weight:900;">' + (on ? '✓' : '+') + '</span>' +
+          '</button>' +
+          (state.isAdminUnlocked
+            ? '<button type="button" data-act="revoke" data-name="' + m + '" style="position:absolute;right:4px;width:18px;height:18px;border-radius:999px;border:1px solid #fb7185;background:rgba(244,63,94,0.3);color:#fecdd3;font-size:11px;font-weight:900;line-height:1;cursor:pointer;">×</button>'
+            : '') +
+          '</div>';
+      }).join('');
 
-        <section class="card-box">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
-            <div style="font-size:14px; font-weight:900; color:#ffffff;">오늘 참석 멤버</div>
-            <div style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:800;">
-              <button type="button" data-action="select-all-regulars" style="padding:5px 8px; border-radius:8px; border:none; background:#1e293b; color:#6ee7b7; font-weight:800; cursor:pointer;">전체선택</button>
-              <button type="button" data-action="clear-selection" style="padding:5px 8px; border-radius:8px; border:none; background:#1e293b; color:#cbd5e1; font-weight:800; cursor:pointer;">해제</button>
-              <button
-                type="button"
-                data-action="toggle-admin-lock"
-                style="padding:5px 8px; border-radius:8px; border:1px solid ${state.isAdminUnlocked ? 'rgba(251,113,133,0.5)' : '#334155'}; background:${state.isAdminUnlocked ? 'rgba(244,63,94,0.2)' : '#060a13'}; color:${state.isAdminUnlocked ? '#fda4af' : '#fcd34d'}; font-weight:800; cursor:pointer;"
-              >
-                ${state.isAdminUnlocked ? '관리자 ON' : '🔒 관리자'}
-              </button>
-            </div>
-          </div>
+      let tabBody = '';
+      if (state.activeTab === 'seats') {
+        tabBody = '<div style="' + cardStyle + '">' +
+          '<div style="font-size:14px;font-weight:900;color:#fff;">홀덤 테이블 자리뽑기</div>' +
+          '<div style="font-size:11px;color:#94a3b8;margin-top:2px;">총 ' + att.length + '석 · 딜러 지정 시 딜러 제외 ' + Math.max(0, att.length - 1) + '명이 1번부터 배정</div>' +
+          renderTable(state.seatAssignments) +
+          '<div style="display:flex;gap:8px;margin-top:8px;">' +
+          '<select id="dealerSel" style="width:126px;height:44px;border-radius:12px;border:1px solid #fbbf24;background:#060a13;color:#fde68a;font-size:12px;font-weight:900;padding:0 8px;flex-shrink:0;">' +
+          '<option value="__RANDOM__"' + (state.selectedDealer === '__RANDOM__' ? ' selected' : '') + '>딜러: 랜덤</option>' +
+          att.map(n => '<option value="' + n + '"' + (state.selectedDealer === n ? ' selected' : '') + '>딜러: ' + n + '</option>').join('') +
+          '</select>' +
+          '<button type="button" data-act="drawSeats" style="flex:1;height:44px;border-radius:12px;border:none;background:#10b981;color:#060a13;font-size:13px;font-weight:900;cursor:pointer;">🎲 자리뽑기 실행 (' + att.length + '명)</button>' +
+          '</div>' +
+          (state.seatAssignments.length
+            ? '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:10px;">' +
+              state.seatAssignments.map(s => '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:10px;border:1px solid ' + (s.isDealer ? '#fbbf24' : '#1e293b') + ';background:' + (s.isDealer ? 'rgba(251,191,36,0.15)' : '#060a13') + ';">' +
+              '<span style="font-size:11px;font-weight:900;color:' + (s.isDealer ? '#fcd34d' : '#34d399') + ';">' + s.label + '</span>' +
+              '<span style="font-size:13px;font-weight:900;color:#fff;">' + s.name + '</span></div>').join('') +
+              '</div>'
+            : '') +
+          '</div>';
+      } else if (state.activeTab === 'dealerFee') {
+        tabBody = '<div style="' + cardStyle + '">' +
+          '<div style="font-size:14px;font-weight:900;color:#fff;">라운드 종료 딜러비 추첨</div>' +
+          '<div style="font-size:11px;color:#94a3b8;margin-top:2px;margin-bottom:8px;">딜러(' + (state.dealerName || '미지정') + ') 및 고정 제외 인원 외 ' + elig.length + '명 중 랜덤 2명 당첨</div>' +
+          '<div style="background:#060a13;border:1px solid #1e293b;border-radius:12px;padding:10px;font-size:12px;margin-bottom:10px;">' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="color:#94a3b8;">현재 딜러 (제외)</span><span style="font-weight:900;color:#fcd34d;">' + (state.dealerName || '없음') + '</span></div>' +
+          '<div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">고정 제외 멤버 ' + (state.isAdminUnlocked ? '(관리자 ON · 눌러서 편집)' : '(🔒 관리자에서 편집)') + '</div>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">' +
+          state.excludedDealerFeeMembers.map(n => '<button type="button" data-act="toggleExc" data-name="' + n + '" style="padding:3px 9px;border-radius:999px;border:1px solid #fb7185;background:rgba(244,63,94,0.18);color:#fecdd3;font-size:11px;font-weight:800;cursor:pointer;">' + n + (state.isAdminUnlocked ? ' ×' : '') + '</button>').join('') +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;border-top:1px solid #1e293b;padding-top:6px;"><span style="color:#94a3b8;">추첨 대상</span><span style="font-weight:900;color:#34d399;">' + elig.length + '명</span></div>' +
+          '</div>' +
+          (state.isAdminUnlocked
+            ? '<div style="background:#060a13;border:1px solid #fbbf24;border-radius:12px;padding:10px;margin-bottom:10px;">' +
+              '<div style="font-size:11px;font-weight:900;color:#fcd34d;margin-bottom:6px;">고정 제외 멤버 편집</div>' +
+              '<div style="display:flex;flex-wrap:wrap;gap:5px;">' +
+              allKnown.map(m => {
+                const ex = state.excludedDealerFeeMembers.includes(m);
+                return '<button type="button" data-act="toggleExc" data-name="' + m + '" style="padding:5px 8px;border-radius:8px;border:1px solid ' + (ex ? '#fb7185' : '#1e293b') + ';background:' + (ex ? 'rgba(244,63,94,0.22)' : '#0f172a') + ';color:' + (ex ? '#fecdd3' : '#94a3b8') + ';font-size:11px;font-weight:800;cursor:pointer;">' + m + (ex ? ' 제외✓' : '') + '</button>';
+              }).join('') +
+              '</div></div>'
+            : '') +
+          (state.dealerFeeDone
+            ? '<div style="background:rgba(251,191,36,0.12);border:1px solid #fbbf24;border-radius:14px;padding:14px;text-align:center;">' +
+              '<div style="font-size:12px;font-weight:900;color:#fcd34d;margin-bottom:8px;">추첨 완료 · 종료</div>' +
+              '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px;">' +
+              state.dealerFeeWinners.map((w, i) => '<div style="background:#060a13;border:1px solid #fbbf24;border-radius:10px;padding:10px;"><div style="font-size:10px;color:#fcd34d;font-weight:800;">당첨 ' + (i + 1) + '</div><div style="font-size:15px;font-weight:900;color:#fff;margin-top:2px;">' + w + '</div></div>').join('') +
+              '</div>' +
+              '<button type="button" data-act="resetFee" style="width:100%;height:40px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff;font-size:12px;font-weight:900;cursor:pointer;">초기화</button></div>'
+            : '<button type="button" data-act="drawFee" style="width:100%;height:44px;border-radius:12px;border:none;background:#fbbf24;color:#060a13;font-size:13px;font-weight:900;cursor:pointer;">🎟️ 딜러비 2명 추첨하기</button>') +
+          '</div>';
+      } else {
+        tabBody = '<div style="' + cardStyle + '">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+          '<span style="font-size:14px;font-weight:900;color:#fcd34d;">총 맨징 금액</span>' +
+          '<button type="button" data-act="toggleR100" style="padding:5px 10px;border-radius:999px;border:1px solid ' + (state.roundTo100 ? '#fbbf24' : '#334155') + ';background:' + (state.roundTo100 ? 'rgba(251,191,36,0.2)' : '#1e293b') + ';color:#fde68a;font-size:11px;font-weight:800;cursor:pointer;">' + (state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF') + '</button>' +
+          '</div>' +
+          '<input id="poolInp" type="text" inputmode="numeric" value="' + fmt(pool) + '" style="' + inputStyle + 'height:44px;text-align:right;font-size:17px;font-weight:900;margin-bottom:8px;" />' +
+          '<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:12px;">' +
+          '<button type="button" data-act="addPool" data-amt="10000" style="height:36px;border-radius:8px;border:none;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:800;cursor:pointer;">+1만</button>' +
+          '<button type="button" data-act="addPool" data-amt="50000" style="height:36px;border-radius:8px;border:none;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:800;cursor:pointer;">+5만</button>' +
+          '<button type="button" data-act="addPool" data-amt="100000" style="height:36px;border-radius:8px;border:none;background:#1e293b;color:#e2e8f0;font-size:12px;font-weight:800;cursor:pointer;">+10만</button>' +
+          '<button type="button" data-act="resetPool" style="height:36px;border-radius:8px;border:1px solid #fb7185;background:rgba(136,19,55,0.5);color:#fecdd3;font-size:12px;font-weight:800;cursor:pointer;">초기화</button>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px;"><span style="font-weight:900;color:#fff;">참여 멤버 (' + items.length + '명)</span><span style="color:#94a3b8;">총 마이너스 <strong style="color:#fda4af;">' + fmt(totalLoss) + '원</strong></span></div>' +
+          items.map((it, idx) =>
+            '<div style="background:#060a13;border:1px solid #1e293b;border-radius:12px;padding:10px;margin-bottom:8px;">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:13px;font-weight:900;color:#fff;">' + (idx + 1) + '. ' + it.name + '</span><span style="font-size:11px;font-weight:800;color:#94a3b8;">' + (it.ratio * 100).toFixed(1) + '%</span></div>' +
+            '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">' +
+            '<div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:8px;display:flex;flex-direction:column;justify-content:center;">' +
+            '<div style="font-size:11px;font-weight:800;color:#fda4af;margin-bottom:4px;">마이너스 금액</div>' +
+            '<input type="text" inputmode="numeric" data-loss-id="' + it.id + '" value="' + fmt(it.loss) + '" style="' + inputStyle + 'height:38px;text-align:right;font-size:14px;font-weight:900;" />' +
+            '</div>' +
+            '<div style="display:flex;flex-direction:column;gap:6px;">' +
+            '<div style="background:rgba(16,185,129,0.14);border:1px solid rgba(52,211,153,0.4);border-radius:10px;padding:8px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:11px;font-weight:800;color:#6ee7b7;">맨징 금액</span><span style="font-size:13px;font-weight:900;color:#6ee7b7;">+' + fmt(it.settled) + '원</span></div>' +
+            '<div style="background:rgba(244,63,94,0.14);border:1px solid rgba(251,113,133,0.4);border-radius:10px;padding:8px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:11px;font-weight:800;color:#fda4af;">최종 손실</span><span style="font-size:13px;font-weight:900;color:#fda4af;">-' + fmt(it.finalLoss) + '원</span></div>' +
+            '</div></div></div>'
+          ).join('') +
+          '<button type="button" data-act="copyKakao" style="width:100%;height:44px;border-radius:12px;border:none;background:#fbbf24;color:#060a13;font-size:13px;font-weight:900;cursor:pointer;margin-top:4px;">' + (state.copiedText ? '✓ 복사 완료' : '💬 카톡 내역 복사') + '</button>' +
+          '</div>';
+      }
 
-          ${state.showAdminPinPrompt && !state.isAdminUnlocked ? `
-            <div style="display:flex; gap:8px; margin-bottom:10px; padding:8px; border-radius:12px; background:#060a13; border:1px solid rgba(251,191,36,0.4);">
-              <input
-                type="password"
-                id="adminPinInput"
-                inputmode="numeric"
-                value="${state.adminPinInput}"
-                placeholder="관리자 PIN (1234)"
-                class="input-dark"
-                style="height:36px; flex:1;"
-              />
-              <button type="button" data-action="verify-admin-pin" style="height:36px; padding:0 14px; border-radius:10px; border:none; background:#fbbf24; color:#060a13; font-size:12px; font-weight:900; cursor:pointer;">확인</button>
-            </div>
-          ` : ''}
+      document.getElementById('app').innerHTML =
+        (state.toast ? '<div style="position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99;background:#1e293b;color:#fde047;border:1px solid #fbbf24;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;">' + state.toast + '</div>' : '') +
+        '<div style="' + cardStyle + 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;">' +
+        '<div style="display:flex;align-items:center;gap:10px;min-width:0;">' +
+        '<img src="icon.png" alt="Holic" onerror="this.style.display=\'none\'" style="width:42px;height:42px;border-radius:10px;object-fit:cover;border:1px solid #fbbf24;flex-shrink:0;" />' +
+        '<div style="min-width:0;"><div style="font-size:15px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Holic 홀덤 매니저</div><div style="font-size:11px;color:#94a3b8;">멤버 체크 후 탭으로 진행</div></div>' +
+        '</div>' +
+        '<span style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid #34d399;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:900;white-space:nowrap;">' + att.length + '명 참석</span>' +
+        '</div>' +
+        '<div style="' + cardStyle + '">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px;">' +
+        '<span style="font-size:14px;font-weight:900;color:#fff;">오늘 참석 멤버</span>' +
+        '<div style="display:flex;gap:5px;">' +
+        '<button type="button" data-act="allSel" style="padding:5px 8px;border-radius:8px;border:none;background:#1e293b;color:#6ee7b7;font-size:11px;font-weight:800;cursor:pointer;">전체선택</button>' +
+        '<button type="button" data-act="clrSel" style="padding:5px 8px;border-radius:8px;border:none;background:#1e293b;color:#cbd5e1;font-size:11px;font-weight:800;cursor:pointer;">해제</button>' +
+        '<button type="button" data-act="admToggle" style="padding:5px 8px;border-radius:8px;border:1px solid #fbbf24;background:' + (state.isAdminUnlocked ? 'rgba(244,63,94,0.25)' : '#060a13') + ';color:#fde68a;font-size:11px;font-weight:800;cursor:pointer;">' + (state.isAdminUnlocked ? '관리자 ON' : '🔒 관리자') + '</button>' +
+        '</div></div>' +
+        (state.showAdminPinPrompt && !state.isAdminUnlocked
+          ? '<div style="display:flex;gap:6px;margin-bottom:8px;"><input id="pinInp" type="password" inputmode="numeric" value="' + state.adminPinInput + '" placeholder="관리자 PIN (1234)" style="' + inputStyle + 'height:36px;flex:1;" /><button type="button" data-act="pinOk" style="height:36px;padding:0 12px;border-radius:8px;border:none;background:#fbbf24;color:#060a13;font-size:12px;font-weight:900;cursor:pointer;">확인</button></div>'
+          : '') +
+        '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">' +
+        (att.length ? att.map(n => '<span style="padding:3px 9px;border-radius:999px;background:rgba(16,185,129,0.18);color:#a7f3d0;border:1px solid #34d399;font-size:11px;font-weight:800;">' + n + '</span>').join('') : '<span style="font-size:11px;color:#64748b;">참석 멤버를 터치하세요.</span>') +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px;">' + memberButtons + '</div>' +
+        (state.guestMembers.length
+          ? '<div style="margin-bottom:8px;"><div style="font-size:11px;font-weight:800;color:#fcd34d;margin-bottom:4px;">추가 참가자</div><div style="display:flex;flex-wrap:wrap;gap:5px;">' +
+            state.guestMembers.map(g => '<button type="button" data-act="toggle" data-name="' + g + '" style="padding:4px 9px;border-radius:999px;border:1px solid #fbbf24;background:rgba(251,191,36,0.2);color:#fde68a;font-size:11px;font-weight:800;cursor:pointer;">' + g + ' ×</button>').join('') +
+            '</div></div>'
+          : '') +
+        '<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid #1e293b;padding-top:8px;">' +
+        '<div style="display:flex;gap:6px;"><input id="regInp" type="text" value="' + state.newRegularInput + '" placeholder="단골 멤버 이름 추가" style="' + inputStyle + 'flex:1;" /><button type="button" data-act="addReg" style="height:40px;padding:0 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#6ee7b7;font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer;">단골등록</button></div>' +
+        '<div style="display:flex;gap:6px;"><input id="gstInp" type="text" value="' + state.newGuestInput + '" placeholder="처음 온 추가 참가자 입력" style="' + inputStyle + 'flex:1;" /><button type="button" data-act="addGst" style="height:40px;padding:0 12px;border-radius:10px;border:none;background:#fbbf24;color:#060a13;font-size:12px;font-weight:900;white-space:nowrap;cursor:pointer;">참가추가</button></div>' +
+        '</div></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#0f172a;border:1px solid #1e293b;border-radius:14px;padding:5px;margin-bottom:10px;">' +
+        '<button type="button" data-act="tab" data-tab="seats" style="height:40px;border-radius:10px;border:none;background:' + (state.activeTab === 'seats' ? '#10b981' : 'transparent') + ';color:' + (state.activeTab === 'seats' ? '#060a13' : '#e2e8f0') + ';font-size:12px;font-weight:900;cursor:pointer;">🪑 자리뽑기</button>' +
+        '<button type="button" data-act="tab" data-tab="dealerFee" style="height:40px;border-radius:10px;border:none;background:' + (state.activeTab === 'dealerFee' ? '#fbbf24' : 'transparent') + ';color:' + (state.activeTab === 'dealerFee' ? '#060a13' : '#e2e8f0') + ';font-size:12px;font-weight:900;cursor:pointer;">🎟️ 딜러비</button>' +
+        '<button type="button" data-act="tab" data-tab="manjing" style="height:40px;border-radius:10px;border:none;background:' + (state.activeTab === 'manjing' ? '#10b981' : 'transparent') + ';color:' + (state.activeTab === 'manjing' ? '#060a13' : '#e2e8f0') + ';font-size:12px;font-weight:900;cursor:pointer;">💰 맨징</button>' +
+        '</div>' +
+        tabBody;
 
-          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; min-height:26px;">
-            ${attendees.length > 0
-              ? attendees.map(name => `<span style="padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; background:rgba(16,185,129,0.16); color:#a7f3d0; border:1px solid rgba(16,185,129,0.3);">${name}</span>`).join('')
-              : `<span style="font-size:12px; color:#64748b;">참석 멤버를 터치해 선택하세요.</span>`}
-          </div>
-
-          <div class="member-grid">
-            ${state.regularMembers.map(member => {
-              const checked = state.selectedMembers.includes(member);
-              return `
-                <div style="position:relative; display:flex; align-items:center;">
-                  <button
-                    type="button"
-                    data-action="toggle-member"
-                    data-name="${member}"
-                    class="member-btn ${checked ? 'active' : ''} ${state.isAdminUnlocked ? 'has-revoke' : ''}"
-                  >
-                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${member}</span>
-                    <span style="font-size:12px; font-weight:900; color:${checked ? '#6ee7b7' : '#475569'};">${checked ? '✓' : '+'}</span>
-                  </button>
-                  ${state.isAdminUnlocked ? `
-                    <button type="button" data-action="revoke-regular" data-name="${member}" class="revoke-x" title="${member} 단골 해지">×</button>
-                  ` : ''}
-                </div>
-              `;
-            }).join('')}
-          </div>
-
-          ${state.guestMembers.length > 0 ? `
-            <div style="margin-bottom:10px;">
-              <div style="font-size:11px; font-weight:800; color:#fcd34d; margin-bottom:6px;">오늘 추가 참가자</div>
-              <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                ${state.guestMembers.map(guest => `
-                  <button type="button" data-action="toggle-member" data-name="${guest}" style="padding:5px 10px; border-radius:999px; border:1px solid rgba(251,191,36,0.5); background:rgba(251,191,36,0.18); color:#fde68a; font-size:12px; font-weight:800; cursor:pointer;">
-                    ${guest} ×
-                  </button>
-                `).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <div style="display:flex; flex-direction:column; gap:8px; padding-top:10px; border-top:1px solid #1e293b;">
-            <div style="display:flex; gap:8px;">
-              <input type="text" id="newRegularInput" value="${state.newRegularInput}" placeholder="단골 멤버 이름 추가" class="input-dark" style="flex:1;" />
-              <button type="button" data-action="add-regular" style="height:42px; padding:0 14px; border-radius:12px; border:1px solid #334155; background:#1e293b; color:#6ee7b7; font-size:12px; font-weight:900; white-space:nowrap; cursor:pointer;">단골등록</button>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <input type="text" id="newGuestInput" value="${state.newGuestInput}" placeholder="처음 온 추가 참가자 입력" class="input-dark" style="flex:1;" />
-              <button type="button" data-action="add-guest" style="height:42px; padding:0 14px; border-radius:12px; border:none; background:#fbbf24; color:#060a13; font-size:12px; font-weight:900; white-space:nowrap; cursor:pointer;">참가추가</button>
-            </div>
-          </div>
-        </section>
-
-        <nav class="tab-nav">
-          <button type="button" data-action="switch-tab" data-tab="seats" class="tab-btn ${state.activeTab === 'seats' ? 'active-emerald' : ''}">🪑 자리뽑기</button>
-          <button type="button" data-action="switch-tab" data-tab="dealerFee" class="tab-btn ${state.activeTab === 'dealerFee' ? 'active-amber' : ''}">🎟️ 딜러비</button>
-          <button type="button" data-action="switch-tab" data-tab="manjing" class="tab-btn ${state.activeTab === 'manjing' ? 'active-emerald' : ''}">💰 맨징</button>
-        </nav>
-
-        ${state.activeTab === 'seats' ? `
-          <section class="card-box">
-            <div style="font-size:14px; font-weight:900; color:#ffffff;">홀덤 테이블 자리뽑기</div>
-            <div style="font-size:11px; color:#94a3b8; margin-top:2px; margin-bottom:6px;">
-              총 ${attendees.length}석 · 딜러 지정 시 딜러 제외 ${Math.max(0, attendees.length - 1)}명이 1번부터 배정됩니다
-            </div>
-
-            ${renderPokerTable(state.seatAssignments)}
-
-            <div style="display:flex; gap:8px; margin-top:10px;">
-              <select id="dealerSelectInline" style="width:132px; height:46px; border-radius:16px; border:1px solid rgba(251,191,36,0.5); background:#060a13; color:#fde68a; font-size:12px; font-weight:900; padding:0 10px; flex-shrink:0;">
-                <option value="__RANDOM__" ${state.selectedDealer === '__RANDOM__' ? 'selected' : ''}>딜러: 랜덤</option>
-                ${attendees.map(name => `<option value="${name}" ${state.selectedDealer === name ? 'selected' : ''}>딜러: ${name}</option>`).join('')}
-              </select>
-              <button type="button" data-action="draw-seats" class="btn-primary-emerald" style="flex:1;">
-                🎲 자리뽑기 실행 (${attendees.length}명)
-              </button>
-            </div>
-
-            ${state.seatAssignments.length > 0 ? `
-              <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:12px;">
-                ${state.seatAssignments.map(s => `
-                  <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; border-radius:12px; border:1px solid ${s.isDealer ? 'rgba(251,191,36,0.5)' : '#1e293b'}; background:${s.isDealer ? 'rgba(251,191,36,0.14)' : '#060a13'};">
-                    <span style="font-size:12px; font-weight:900; color:${s.isDealer ? '#fcd34d' : '#34d399'};">${s.seatLabel}</span>
-                    <span style="font-size:13px; font-weight:900; color:#ffffff;">${s.name}</span>
-                  </div>
-                `).join('')}
-              </div>
-            ` : ''}
-          </section>
-        ` : ''}
-
-        ${state.activeTab === 'dealerFee' ? `
-          <section class="card-box">
-            <div style="font-size:14px; font-weight:900; color:#ffffff;">라운드 종료 딜러비 추첨</div>
-            <div style="font-size:12px; color:#94a3b8; margin-top:2px; margin-bottom:10px;">
-              딜러(${state.dealerName || '미지정'}) 및 고정 제외 인원 외 ${eligibleDealerFeeAttendees.length}명 중 랜덤 2명 당첨
-            </div>
-
-            <div style="background:#060a13; border:1px solid #1e293b; border-radius:14px; padding:12px; font-size:12px; margin-bottom:12px;">
-              <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="color:#94a3b8;">현재 딜러 (제외)</span>
-                <span style="font-weight:900; color:#fcd34d;">${state.dealerName || '없음'}</span>
-              </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="color:#94a3b8;">고정 딜러비 제외 멤버</span>
-                <span style="font-size:11px; color:${state.isAdminUnlocked ? '#fcd34d' : '#64748b'}; font-weight:800;">
-                  ${state.isAdminUnlocked ? '관리자 ON · 터치하여 편집' : '🔒 관리자에서 편집 가능'}
-                </span>
-              </div>
-              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px;">
-                ${state.excludedDealerFeeMembers.length > 0
-                  ? state.excludedDealerFeeMembers.map(name => `
-                    <button type="button" data-action="toggle-dealer-fee-exclude" data-name="${name}" style="padding:4px 10px; border-radius:999px; border:1px solid rgba(251,113,133,0.45); background:rgba(244,63,94,0.16); color:#fda4af; font-size:12px; font-weight:800; cursor:pointer;">
-                      ${name}${state.isAdminUnlocked ? ' ×' : ''}
-                    </button>
-                  `).join('')
-                  : `<span style="color:#64748b; font-size:12px;">고정 제외 멤버 없음</span>`}
-              </div>
-              <div style="display:flex; justify-content:space-between; padding-top:8px; border-top:1px solid #1e293b;">
-                <span style="color:#94a3b8;">실제 추첨 대상</span>
-                <span style="font-weight:900; color:#34d399;">${eligibleDealerFeeAttendees.length}명</span>
-              </div>
-            </div>
-
-            ${state.isAdminUnlocked ? `
-              <div style="background:#060a13; border:1px solid rgba(251,191,36,0.4); border-radius:14px; padding:12px; margin-bottom:12px;">
-                <div style="font-size:12px; font-weight:900; color:#fcd34d; margin-bottom:8px;">고정 제외 멤버 편집 (관리자 모드)</div>
-                <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                  ${allKnownMembers.map(member => {
-                    const isExcluded = state.excludedDealerFeeMembers.includes(member);
-                    return `
-                      <button type="button" data-action="toggle-dealer-fee-exclude" data-name="${member}" style="padding:6px 10px; border-radius:10px; border:1px solid ${isExcluded ? '#fb7185' : '#1e293b'}; background:${isExcluded ? 'rgba(244,63,94,0.2)' : '#0f172a'}; color:${isExcluded ? '#fecdd3' : '#94a3b8'}; font-size:12px; font-weight:800; cursor:pointer;">
-                        ${member} ${isExcluded ? '제외 ✓' : ''}
-                      </button>
-                    `;
-                  }).join('')}
-                </div>
-              </div>
-            ` : ''}
-
-            ${state.dealerFeeDone ? `
-              <div style="background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.45); border-radius:16px; padding:16px; text-align:center;">
-                <span style="display:inline-block; padding:4px 12px; border-radius:999px; background:#fbbf24; color:#060a13; font-size:12px; font-weight:900; margin-bottom:10px;">추첨 완료 · 종료</span>
-                <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; margin-bottom:12px;">
-                  ${state.dealerFeeWinners.map((winner, i) => `
-                    <div style="background:#060a13; border:1px solid rgba(252,211,77,0.5); border-radius:12px; padding:12px 8px;">
-                      <div style="font-size:11px; font-weight:800; color:#fcd34d;">당첨 ${i + 1}</div>
-                      <div style="font-size:16px; font-weight:900; color:#ffffff; margin-top:4px;">${winner}</div>
-                    </div>
-                  `).join('')}
-                </div>
-                <button type="button" data-action="reset-dealer-fee" style="width:100%; height:42px; border-radius:12px; border:1px solid #334155; background:#1e293b; color:#ffffff; font-size:12px; font-weight:900; cursor:pointer;">초기화</button>
-              </div>
-            ` : `
-              <button type="button" data-action="draw-dealer-fee" class="btn-amber" style="width:100%;">🎟️ 딜러비 2명 추첨하기</button>
-            `}
-          </section>
-        ` : ''}
-
-        ${state.activeTab === 'manjing' ? `
-          <section class="card-box">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-              <span style="font-size:14px; font-weight:900; color:#fcd34d;">총 맨징 금액</span>
-              <button type="button" data-action="toggle-round100" style="padding:6px 12px; border-radius:999px; border:1px solid ${state.roundTo100 ? '#fbbf24' : '#334155'}; background:${state.roundTo100 ? 'rgba(251,191,36,0.2)' : '#1e293b'}; color:${state.roundTo100 ? '#fde68a' : '#cbd5e1'}; font-size:12px; font-weight:800; cursor:pointer;">
-                ${state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF'}
-              </button>
-            </div>
-
-            <div style="position:relative; margin-bottom:8px;">
-              <input id="totalPoolInput" type="text" inputmode="numeric" value="${formatNumber(pool)}" class="input-dark" style="height:46px; padding-right:34px; text-align:right; font-size:18px; font-weight:900;" />
-              <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:800; color:#94a3b8;">원</span>
-            </div>
-
-            <div style="display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; margin-bottom:14px;">
-              <button type="button" data-action="add-pool" data-amount="10000" style="height:38px; border-radius:10px; border:none; background:#1e293b; color:#e2e8f0; font-size:12px; font-weight:800; cursor:pointer;">+1만</button>
-              <button type="button" data-action="add-pool" data-amount="50000" style="height:38px; border-radius:10px; border:none; background:#1e293b; color:#e2e8f0; font-size:12px; font-weight:800; cursor:pointer;">+5만</button>
-              <button type="button" data-action="add-pool" data-amount="100000" style="height:38px; border-radius:10px; border:none; background:#1e293b; color:#e2e8f0; font-size:12px; font-weight:800; cursor:pointer;">+10만</button>
-              <button type="button" data-action="reset-pool" style="height:38px; border-radius:10px; border:1px solid rgba(244,63,94,0.45); background:rgba(136,19,55,0.55); color:#fda4af; font-size:12px; font-weight:800; cursor:pointer;">초기화</button>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:8px;">
-              <span style="font-weight:900; color:#ffffff;">참여 멤버 (${items.length}명)</span>
-              <span style="color:#94a3b8;">총 마이너스 <strong style="color:#fda4af;">${formatNumber(totalLoss)}원</strong></span>
-            </div>
-
-            ${items.length === 0
-              ? `<div style="text-align:center; padding:24px 0; font-size:12px; color:#94a3b8;">위에서 참석 멤버를 선택해 주세요.</div>`
-              : items.map((item, idx) => `
-                <div style="background:#060a13; border:1px solid #1e293b; border-radius:14px; padding:12px; margin-bottom:8px;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <span style="font-size:13px; font-weight:900; color:#ffffff;">${idx + 1}. ${item.name}</span>
-                    <span style="font-size:12px; font-weight:800; color:#94a3b8;">${(item.ratio * 100).toFixed(1)}%</span>
-                  </div>
-
-                  <div class="manjing-split">
-                    <div style="background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:10px; display:flex; flex-direction:column; justify-content:center;">
-                      <span style="font-size:11px; font-weight:800; color:#fda4af; margin-bottom:6px;">마이너스 금액</span>
-                      <div style="position:relative;">
-                        <span style="position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:900; color:#fb7185;">-</span>
-                        <input
-                          type="text"
-                          inputmode="numeric"
-                          data-player-loss-id="${item.id}"
-                          value="${formatNumber(item.loss)}"
-                          class="input-dark"
-                          style="height:42px; padding-left:20px; padding-right:24px; text-align:right; font-size:14px; font-weight:900;"
-                        />
-                        <span style="position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:11px; color:#64748b;">원</span>
-                      </div>
-                    </div>
-
-                    <div class="manjing-right-stack">
-                      <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); border-radius:12px; padding:9px 10px; display:flex; align-items:center; justify-content:space-between; gap:6px;">
-                        <span style="font-size:12px; font-weight:800; color:#6ee7b7; white-space:nowrap;">맨징 금액</span>
-                        <span style="font-size:14px; font-weight:900; color:#6ee7b7; white-space:nowrap;">+${formatNumber(item.settledAmount)}원</span>
-                      </div>
-                      <div style="background:rgba(244,63,94,0.12); border:1px solid rgba(251,113,133,0.35); border-radius:12px; padding:9px 10px; display:flex; align-items:center; justify-content:space-between; gap:6px;">
-                        <span style="font-size:12px; font-weight:800; color:#fda4af; white-space:nowrap;">최종 손실</span>
-                        <span style="font-size:14px; font-weight:900; color:${item.finalLoss > 0 ? '#fda4af' : '#cbd5e1'}; white-space:nowrap;">-${formatNumber(item.finalLoss)}원</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              `).join('')}
-
-            <div style="display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; margin-top:8px;">
-              <button type="button" data-action="copy-kakao" class="btn-amber">
-                ${state.copiedText ? '✓ 복사 완료' : '💬 카톡 내역 복사'}
-              </button>
-              <button type="button" data-action="export-png" style="height:46px; border:none; border-radius:16px; background:#10b981; color:#060a13; font-size:13px; font-weight:900; cursor:pointer;">
-                ${state.exportingImage ? '저장 중...' : '🖼️ 이미지 저장'}
-              </button>
-            </div>
-          </section>
-        ` : ''}
-      `;
-
-      bindEvents();
+      bind();
     }
 
-    function bindEvents() {
-      const regInput = document.getElementById('newRegularInput');
-      if (regInput) {
-        regInput.addEventListener('input', e => { state.newRegularInput = e.target.value; });
-        regInput.addEventListener('keydown', e => { if (e.key === 'Enter') addRegularMember(); });
+    function bind() {
+      const regInp = document.getElementById('regInp');
+      if (regInp) regInp.oninput = e => { state.newRegularInput = e.target.value; };
+      const gstInp = document.getElementById('gstInp');
+      if (gstInp) gstInp.oninput = e => { state.newGuestInput = e.target.value; };
+      const pinInp = document.getElementById('pinInp');
+      if (pinInp) pinInp.oninput = e => { state.adminPinInput = e.target.value; };
+      const dealerSel = document.getElementById('dealerSel');
+      if (dealerSel) dealerSel.onchange = e => { state.selectedDealer = e.target.value; };
+      const poolInp = document.getElementById('poolInp');
+      if (poolInp) {
+        poolInp.oninput = e => { const v = digits(e.target.value); state.totalPool = v; e.target.value = fmt(v); };
+        poolInp.onblur = () => render();
       }
-
-      const guestInput = document.getElementById('newGuestInput');
-      if (guestInput) {
-        guestInput.addEventListener('input', e => { state.newGuestInput = e.target.value; });
-        guestInput.addEventListener('keydown', e => { if (e.key === 'Enter') addGuestMember(); });
-      }
-
-      const pinInput = document.getElementById('adminPinInput');
-      if (pinInput) {
-        pinInput.addEventListener('input', e => { state.adminPinInput = e.target.value; });
-        pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') verifyAdminPin(); });
-      }
-
-      const dealerSelect = document.getElementById('dealerSelectInline');
-      if (dealerSelect) {
-        dealerSelect.addEventListener('change', e => { state.selectedDealer = e.target.value; });
-      }
-
-      const poolInput = document.getElementById('totalPoolInput');
-      if (poolInput) {
-        poolInput.addEventListener('input', e => {
-          const val = parseDigits(e.target.value);
-          state.totalPool = val;
-          e.target.value = formatNumber(val);
-        });
-        poolInput.addEventListener('blur', () => render());
-      }
-
-      document.querySelectorAll('[data-player-loss-id]').forEach(input => {
-        input.addEventListener('input', e => {
-          const id = Number(e.target.getAttribute('data-player-loss-id'));
-          const val = parseDigits(e.target.value);
-          state.players = state.players.map(p => (p.id === id ? { ...p, loss: val } : p));
-          e.target.value = formatNumber(val);
-        });
-        input.addEventListener('blur', () => render());
+      document.querySelectorAll('[data-loss-id]').forEach(inp => {
+        inp.oninput = e => {
+          const id = Number(e.target.getAttribute('data-loss-id'));
+          const v = digits(e.target.value);
+          state.players = state.players.map(p => p.id === id ? { ...p, loss: v } : p);
+          e.target.value = fmt(v);
+        };
+        inp.onblur = () => render();
       });
-
-      document.querySelectorAll('[data-action]').forEach(el => {
-        el.addEventListener('click', () => {
-          const action = el.getAttribute('data-action');
-          if (action === 'toggle-member') {
-            toggleAttendee(el.getAttribute('data-name'));
-          } else if (action === 'select-all-regulars') {
-            state.selectedMembers = [...state.regularMembers];
-            persistMemberState();
-            render();
-          } else if (action === 'clear-selection') {
-            state.selectedMembers = [];
-            state.guestMembers = [];
-            persistMemberState();
-            render();
-          } else if (action === 'toggle-admin-lock') {
-            if (state.isAdminUnlocked) {
-              state.isAdminUnlocked = false;
-              state.showAdminPinPrompt = false;
-              showToast('관리자 모드 종료');
-            } else {
-              state.showAdminPinPrompt = !state.showAdminPinPrompt;
-              render();
-            }
-          } else if (action === 'verify-admin-pin') {
-            verifyAdminPin();
-          } else if (action === 'revoke-regular') {
-            revokeRegularMember(el.getAttribute('data-name'));
-          } else if (action === 'toggle-dealer-fee-exclude') {
-            toggleDealerFeeExclusion(el.getAttribute('data-name'));
-          } else if (action === 'add-regular') {
-            addRegularMember();
-          } else if (action === 'add-guest') {
-            addGuestMember();
-          } else if (action === 'switch-tab') {
-            state.activeTab = el.getAttribute('data-tab');
-            render();
-          } else if (action === 'draw-seats') {
+      document.querySelectorAll('[data-act]').forEach(el => {
+        el.onclick = () => {
+          const act = el.getAttribute('data-act');
+          const name = el.getAttribute('data-name');
+          if (act === 'toggle') {
+            if (state.guestMembers.includes(name)) state.guestMembers = state.guestMembers.filter(g => g !== name);
+            else if (state.selectedMembers.includes(name)) state.selectedMembers = state.selectedMembers.filter(m => m !== name);
+            else state.selectedMembers = [...state.selectedMembers, name];
+            persistAll(); render();
+          } else if (act === 'allSel') {
+            state.selectedMembers = state.regularMembers.slice(); persistAll(); render();
+          } else if (act === 'clrSel') {
+            state.selectedMembers = []; state.guestMembers = []; persistAll(); render();
+          } else if (act === 'admToggle') {
+            if (state.isAdminUnlocked) { state.isAdminUnlocked = false; state.showAdminPinPrompt = false; notify('관리자 모드 종료'); }
+            else { state.showAdminPinPrompt = !state.showAdminPinPrompt; render(); }
+          } else if (act === 'pinOk') {
+            if (state.adminPinInput.trim() === ADMIN_PIN) { state.isAdminUnlocked = true; state.showAdminPinPrompt = false; state.adminPinInput = ''; notify('관리자 모드 ON'); }
+            else { state.adminPinInput = ''; notify('PIN이 일치하지 않습니다.'); }
+          } else if (act === 'revoke') {
+            if (!state.isAdminUnlocked) { state.showAdminPinPrompt = true; notify('관리자 인증 후 해지 가능합니다.'); return; }
+            state.regularMembers = state.regularMembers.filter(m => m !== name);
+            state.selectedMembers = state.selectedMembers.filter(m => m !== name);
+            state.excludedDealerFeeMembers = state.excludedDealerFeeMembers.filter(m => m !== name);
+            persistAll(); notify("'" + name + "' 해지 완료");
+          } else if (act === 'toggleExc') {
+            if (!state.isAdminUnlocked) { state.showAdminPinPrompt = true; notify('관리자 모드에서 편집 가능합니다.'); return; }
+            if (state.excludedDealerFeeMembers.includes(name)) state.excludedDealerFeeMembers = state.excludedDealerFeeMembers.filter(m => m !== name);
+            else state.excludedDealerFeeMembers = [...state.excludedDealerFeeMembers, name];
+            persistAll(); render();
+          } else if (act === 'addReg') {
+            const t = state.newRegularInput.trim(); if (!t) return;
+            if (!state.regularMembers.includes(t)) state.regularMembers = [...state.regularMembers, t];
+            state.selectedMembers = [...new Set([...state.selectedMembers, t])];
+            state.newRegularInput = ''; persistAll(); notify("'" + t + "' 단골 추가 완료");
+          } else if (act === 'addGst') {
+            const t = state.newGuestInput.trim(); if (!t) return;
+            if (!state.regularMembers.includes(t) && !state.guestMembers.includes(t)) state.guestMembers = [...state.guestMembers, t];
+            state.newGuestInput = ''; persistAll(); notify("'" + t + "' 참가 추가 완료");
+          } else if (act === 'tab') {
+            state.activeTab = el.getAttribute('data-tab'); render();
+          } else if (act === 'drawSeats') {
             drawSeats();
-          } else if (action === 'draw-dealer-fee') {
-            drawDealerFeeWinners();
-          } else if (action === 'reset-dealer-fee') {
-            resetDealerFeeRound();
-          } else if (action === 'toggle-round100') {
-            state.roundTo100 = !state.roundTo100;
-            render();
-          } else if (action === 'add-pool') {
-            const amount = Number(el.getAttribute('data-amount')) || 0;
-            state.totalPool = (Number(state.totalPool) || 0) + amount;
-            render();
-          } else if (action === 'reset-pool') {
-            state.totalPool = 0;
-            state.players = state.players.map(p => ({ ...p, loss: 0 }));
-            render();
-          } else if (action === 'copy-kakao') {
-            copySettlementText();
-          } else if (action === 'export-png') {
-            exportSettlementPng();
+          } else if (act === 'drawFee') {
+            drawDealerFee();
+          } else if (act === 'resetFee') {
+            state.dealerFeeWinners = []; state.dealerFeeDone = false; render();
+          } else if (act === 'toggleR100') {
+            state.roundTo100 = !state.roundTo100; render();
+          } else if (act === 'addPool') {
+            state.totalPool = (Number(state.totalPool) || 0) + (Number(el.getAttribute('data-amt')) || 0); render();
+          } else if (act === 'resetPool') {
+            state.totalPool = 0; state.players = state.players.map(p => ({ ...p, loss: 0 })); render();
+          } else if (act === 'copyKakao') {
+            copyKakao();
           }
-        });
+        };
       });
     }
 
