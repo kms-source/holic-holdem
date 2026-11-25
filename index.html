@@ -33,10 +33,10 @@
     const ADMIN_PIN = '1234';
 
     const KEYS = {
-      regulars: 'holic_reg_v8',
-      selected: 'holic_sel_v8',
-      guests: 'holic_gst_v8',
-      excluded: 'holic_exc_v8'
+      regulars: 'holic_reg_v9',
+      selected: 'holic_sel_v9',
+      guests: 'holic_gst_v9',
+      excluded: 'holic_exc_v9'
     };
 
     function loadArr(key, fallback) {
@@ -73,6 +73,7 @@
       players: [],
       lastSig: '',
       sharedOrCopied: false,
+      sendingImage: false,
       toast: ''
     };
 
@@ -178,26 +179,51 @@
       render();
     }
 
+    // 반올림하더라도 총 맨징 금액이 설정 금액(pool)과 정확히 일치하도록 보정
     function calcManjing() {
       const pool = Math.max(0, Number(state.totalPool) || 0);
       const list = state.players.map(p => ({ ...p, loss: Math.max(0, Number(p.loss) || 0) }));
       const totalLoss = list.reduce((s, p) => s + p.loss, 0);
 
-      if (totalLoss <= 0) {
+      if (totalLoss <= 0 || pool <= 0) {
         return {
           pool,
-          totalLoss: 0,
+          totalLoss,
           totalSettled: 0,
-          totalFinalLoss: 0,
-          items: list.map(p => ({ ...p, ratio: 0, settled: 0, finalLoss: 0 }))
+          totalFinalLoss: totalLoss,
+          items: list.map(p => ({ ...p, ratio: 0, settled: 0, finalLoss: p.loss }))
         };
       }
 
-      const items = list.map(p => {
+      const rawItems = list.map(p => {
         const ratio = p.loss / totalLoss;
         const settled = roundAmt(pool * ratio, state.roundTo100);
-        const finalLoss = Math.max(0, p.loss - settled);
-        return { ...p, ratio, settled, finalLoss };
+        return { ...p, ratio, settled };
+      });
+
+      let diff = pool - rawItems.reduce((s, it) => s + it.settled, 0);
+      if (diff !== 0) {
+        let targetIdx = -1;
+        for (let i = 0; i < rawItems.length; i++) {
+          if (rawItems[i].loss > 0) {
+            if (targetIdx === -1 || rawItems[i].loss > rawItems[targetIdx].loss) {
+              targetIdx = i;
+            }
+          }
+        }
+        if (targetIdx !== -1) {
+          rawItems[targetIdx].settled = Math.max(0, rawItems[targetIdx].settled + diff);
+          const secondDiff = pool - rawItems.reduce((s, it) => s + it.settled, 0);
+          if (secondDiff !== 0) {
+            const candidate = rawItems.find(it => it.loss > 0 && it.settled + secondDiff >= 0);
+            if (candidate) candidate.settled += secondDiff;
+          }
+        }
+      }
+
+      const items = rawItems.map(it => {
+        const finalLoss = Math.max(0, it.loss - it.settled);
+        return { ...it, finalLoss };
       });
 
       const totalSettled = items.reduce((s, it) => s + it.settled, 0);
@@ -207,11 +233,11 @@
     }
 
     function buildShareText() {
-      const { pool, totalLoss, totalSettled, totalFinalLoss, items } = calcManjing();
+      const { totalLoss, totalSettled, totalFinalLoss, items } = calcManjing();
       const lines = [
         '🃏 [Holic] 홀덤 맨징 정산',
         '• 총 마이너스 금액: -' + fmt(totalLoss) + '원',
-        '• 총 맨징 금액: +' + fmt(totalSettled) + '원 (설정 상금 ' + fmt(pool) + '원)',
+        '• 총 맨징 금액: +' + fmt(totalSettled) + '원',
         '• 총 최종 손실 금액: -' + fmt(totalFinalLoss) + '원',
         '• 반올림: ' + (state.roundTo100 ? '100원 단위' : '원 단위'),
         ''
@@ -255,10 +281,112 @@
           document.body.removeChild(ta);
         }
         state.sharedOrCopied = true;
-        notify('내역이 복사되었습니다. 원하는 곳에 붙여넣어 전달하세요!');
+        notify('내역이 복사되었습니다. 카톡에 붙여넣어 전달하세요!');
         setTimeout(() => { state.sharedOrCopied = false; render(); }, 1600);
       } catch (e) {
         notify('전달에 실패했습니다.');
+      }
+    }
+
+    function createSettlementCanvas() {
+      const { totalLoss, totalSettled, totalFinalLoss, items } = calcManjing();
+      const width = 920;
+      const rowHeight = 84;
+      const height = 310 + Math.max(items.length, 1) * rowHeight;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+      bgGrad.addColorStop(0, '#090d16');
+      bgGrad.addColorStop(1, '#111827');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(24, 24, width - 48, height - 48);
+
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 34px sans-serif';
+      ctx.fillText('Holic 홀덤 맨징 정산표', 56, 84);
+
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = 'bold 21px sans-serif';
+      ctx.fillText(
+        '총 마이너스 -' + fmt(totalLoss) + '원   |   총 맨징 +' + fmt(totalSettled) + '원   |   총 최종손실 -' + fmt(totalFinalLoss) + '원',
+        56,
+        130
+      );
+
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(56, 158);
+      ctx.lineTo(width - 56, 158);
+      ctx.stroke();
+
+      items.forEach((item, idx) => {
+        const y = 212 + idx * rowHeight;
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
+        ctx.fillRect(56, y - 34, width - 112, 66);
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 23px sans-serif';
+        ctx.fillText((idx + 1) + '. ' + item.name, 76, y - 2);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '19px sans-serif';
+        ctx.fillText('-' + fmt(item.loss) + '원 (' + (item.ratio * 100).toFixed(1) + '%)', 270, y - 2);
+
+        ctx.fillStyle = '#34d399';
+        ctx.font = 'bold 23px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('+' + fmt(item.settled) + '원', width - 76, y - 5);
+
+        ctx.fillStyle = '#fda4af';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText('최종손실 -' + fmt(item.finalLoss) + '원', width - 76, y + 20);
+        ctx.textAlign = 'left';
+      });
+
+      return canvas;
+    }
+
+    async function shareSettlementImage() {
+      state.sendingImage = true;
+      render();
+      try {
+        const canvas = createSettlementCanvas();
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        if (!blob) throw new Error('이미지 생성 실패');
+
+        const file = new File([blob], 'holic-manjing.png', { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Holic 홀덤 맨징 정산표',
+            files: [file]
+          });
+          notify('이미지 전달 창이 열렸습니다');
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'holic-manjing.png';
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          notify('이미지를 저장했습니다. 카톡에서 첨부해 전달하세요!');
+        }
+      } catch (e) {
+        if (!e || e.name !== 'AbortError') {
+          notify('이미지 전달 중 오류가 발생했습니다.');
+        }
+      } finally {
+        state.sendingImage = false;
+        render();
       }
     }
 
@@ -374,7 +502,7 @@
       } else {
         tabBody = '<div style="' + cardStyle + '">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
-          '<span style="font-size:14px;font-weight:900;color:#fcd34d;">총 맨징 금액 (배분 상금)</span>' +
+          '<span style="font-size:14px;font-weight:900;color:#fcd34d;">총 맨징 금액</span>' +
           '<button type="button" data-act="toggleR100" style="padding:5px 10px;border-radius:999px;border:1px solid ' + (state.roundTo100 ? '#fbbf24' : '#334155') + ';background:' + (state.roundTo100 ? 'rgba(251,191,36,0.2)' : '#1e293b') + ';color:#fde68a;font-size:11px;font-weight:800;cursor:pointer;">' + (state.roundTo100 ? '100원 반올림 ON' : '100원 반올림 OFF') + '</button>' +
           '</div>' +
           '<input id="poolInp" type="text" inputmode="numeric" value="' + fmt(pool) + '" style="' + inputStyle + 'height:44px;text-align:right;font-size:17px;font-weight:900;margin-bottom:8px;" />' +
@@ -412,7 +540,10 @@
             '<div style="background:rgba(244,63,94,0.14);border:1px solid rgba(251,113,133,0.4);border-radius:10px;padding:8px;display:flex;justify-content:space-between;align-items:center;"><span style="font-size:11px;font-weight:800;color:#fda4af;">최종 손실</span><span style="font-size:13px;font-weight:900;color:#fda4af;">-' + fmt(it.finalLoss) + '원</span></div>' +
             '</div></div></div>'
           ).join('') +
-          '<button type="button" data-act="deliver" style="width:100%;height:46px;border-radius:12px;border:none;background:#fbbf24;color:#060a13;font-size:14px;font-weight:900;cursor:pointer;margin-top:6px;">' + (state.sharedOrCopied ? '✓ 전달 준비 완료' : '📤 내역 전달하기') + '</button>' +
+          '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:6px;">' +
+          '<button type="button" data-act="deliver" style="height:46px;border-radius:12px;border:none;background:#fbbf24;color:#060a13;font-size:13px;font-weight:900;cursor:pointer;">' + (state.sharedOrCopied ? '✓ 전달 완료' : '📤 내역 전달하기') + '</button>' +
+          '<button type="button" data-act="sendImg" style="height:46px;border-radius:12px;border:none;background:#10b981;color:#060a13;font-size:13px;font-weight:900;cursor:pointer;">' + (state.sendingImage ? '준비 중...' : '🖼️ 이미지 전달하기') + '</button>' +
+          '</div>' +
           '</div>';
       }
 
@@ -536,6 +667,8 @@
             state.totalPool = 0; state.players = state.players.map(p => ({ ...p, loss: 0 })); render();
           } else if (act === 'deliver') {
             deliverSettlement();
+          } else if (act === 'sendImg') {
+            shareSettlementImage();
           }
         };
       });
