@@ -33,10 +33,10 @@
     const ADMIN_PIN = '1234';
 
     const KEYS = {
-      regulars: 'holic_reg_v9',
-      selected: 'holic_sel_v9',
-      guests: 'holic_gst_v9',
-      excluded: 'holic_exc_v9'
+      regulars: 'holic_reg_v10',
+      selected: 'holic_sel_v10',
+      guests: 'holic_gst_v10',
+      excluded: 'holic_exc_v10'
     };
 
     function loadArr(key, fallback) {
@@ -179,7 +179,7 @@
       render();
     }
 
-    // 반올림하더라도 총 맨징 금액이 설정 금액(pool)과 정확히 일치하도록 보정
+    // 반올림 후 총 맨징 금액이 설정 금액(pool)과 정확히 일치하도록 오차 보정
     function calcManjing() {
       const pool = Math.max(0, Number(state.totalPool) || 0);
       const list = state.players.map(p => ({ ...p, loss: Math.max(0, Number(p.loss) || 0) }));
@@ -201,23 +201,31 @@
         return { ...p, ratio, settled };
       });
 
+      const step = state.roundTo100 ? 100 : 1;
       let diff = pool - rawItems.reduce((s, it) => s + it.settled, 0);
+
       if (diff !== 0) {
-        let targetIdx = -1;
-        for (let i = 0; i < rawItems.length; i++) {
-          if (rawItems[i].loss > 0) {
-            if (targetIdx === -1 || rawItems[i].loss > rawItems[targetIdx].loss) {
-              targetIdx = i;
+        const sortedIndices = rawItems
+          .map((it, idx) => ({ idx, loss: it.loss }))
+          .filter(x => x.loss > 0)
+          .sort((a, b) => b.loss - a.loss)
+          .map(x => x.idx);
+
+        for (let k = 0; k < sortedIndices.length && diff !== 0; k++) {
+          const idx = sortedIndices[k];
+          const unit = diff > 0 ? step : -step;
+          if (Math.abs(diff) >= step) {
+            const nextVal = rawItems[idx].settled + unit;
+            if (nextVal >= 0) {
+              rawItems[idx].settled = nextVal;
+              diff -= unit;
             }
           }
         }
-        if (targetIdx !== -1) {
-          rawItems[targetIdx].settled = Math.max(0, rawItems[targetIdx].settled + diff);
-          const secondDiff = pool - rawItems.reduce((s, it) => s + it.settled, 0);
-          if (secondDiff !== 0) {
-            const candidate = rawItems.find(it => it.loss > 0 && it.settled + secondDiff >= 0);
-            if (candidate) candidate.settled += secondDiff;
-          }
+
+        if (diff !== 0 && sortedIndices.length > 0) {
+          const primaryIdx = sortedIndices[0];
+          rawItems[primaryIdx].settled = Math.max(0, rawItems[primaryIdx].settled + diff);
         }
       }
 
