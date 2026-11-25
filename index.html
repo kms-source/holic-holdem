@@ -25,6 +25,7 @@
   <div id="app" style="width:100%;max-width:440px;margin:0 auto;padding:12px 12px 84px 12px;"></div>
 
   <script>
+    const APP_SHARE_URL = 'https://kms-source.github.io/holic-holdem/';
     const DEFAULT_REGULAR_MEMBERS = [
       '민석', '민겸', '서이', '진겸', '윤범', '민중', '주광', '동준', '미림',
       '중훈', '나윤', '재호', '한빈', '선수', '태현', '윤아', '영모'
@@ -33,10 +34,10 @@
     const ADMIN_PIN = '1234';
 
     const KEYS = {
-      regulars: 'holic_reg_v10',
-      selected: 'holic_sel_v10',
-      guests: 'holic_gst_v10',
-      excluded: 'holic_exc_v10'
+      regulars: 'holic_reg_v11',
+      selected: 'holic_sel_v11',
+      guests: 'holic_gst_v11',
+      excluded: 'holic_exc_v11'
     };
 
     function loadArr(key, fallback) {
@@ -117,6 +118,42 @@
       window.__t = setTimeout(() => { state.toast = ''; render(); }, 1900);
     }
 
+    async function shareAppLink() {
+      const shareText =
+        'Holic 홀덤 매니저 앱\n' +
+        APP_SHARE_URL + '\n' +
+        '(브라우저로 연 뒤 홈 화면에 추가해서 앱처럼 사용할 수 있어요)';
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: 'Holic 홀덤 매니저',
+            text: shareText,
+            url: APP_SHARE_URL
+          });
+          notify('앱 링크 공유 창이 열렸습니다');
+          return;
+        }
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(APP_SHARE_URL);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = APP_SHARE_URL;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        notify('앱 링크가 복사되었습니다!');
+      } catch (e) {
+        notify('링크 복사에 실패했습니다.');
+      }
+    }
+
     function persistAll() {
       saveArr(KEYS.regulars, state.regularMembers);
       saveArr(KEYS.guests, state.guestMembers);
@@ -179,7 +216,6 @@
       render();
     }
 
-    // 반올림 후 총 맨징 금액이 설정 금액(pool)과 정확히 일치하도록 오차 보정
     function calcManjing() {
       const pool = Math.max(0, Number(state.totalPool) || 0);
       const list = state.players.map(p => ({ ...p, loss: Math.max(0, Number(p.loss) || 0) }));
@@ -562,8 +598,10 @@
         '<img src="icon.png" alt="Holic" onerror="this.style.display=\'none\'" style="width:42px;height:42px;border-radius:10px;object-fit:cover;border:1px solid #fbbf24;flex-shrink:0;" />' +
         '<div style="min-width:0;"><div style="font-size:15px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Holic 홀덤 매니저</div><div style="font-size:11px;color:#94a3b8;">멤버 체크 후 탭으로 진행</div></div>' +
         '</div>' +
-        '<span style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid #34d399;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:900;white-space:nowrap;">' + att.length + '명 참석</span>' +
-        '</div>' +
+        '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">' +
+        '<span style="background:rgba(16,185,129,0.2);color:#6ee7b7;border:1px solid #34d399;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:900;white-space:nowrap;">' + att.length + '명</span>' +
+        '<button type="button" data-act="shareApp" style="padding:6px 9px;border-radius:10px;border:1px solid rgba(251,191,36,0.5);background:rgba(251,191,36,0.16);color:#fde68a;font-size:11px;font-weight:900;white-space:nowrap;cursor:pointer;">📲 앱 공유</button>' +
+        '</div></div>' +
         '<div style="' + cardStyle + '">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px;">' +
         '<span style="font-size:14px;font-weight:900;color:#fff;">오늘 참석 멤버</span>' +
@@ -573,7 +611,7 @@
         '<button type="button" data-act="admToggle" style="padding:5px 8px;border-radius:8px;border:1px solid #fbbf24;background:' + (state.isAdminUnlocked ? 'rgba(244,63,94,0.25)' : '#060a13') + ';color:#fde68a;font-size:11px;font-weight:800;cursor:pointer;">' + (state.isAdminUnlocked ? '관리자 ON' : '🔒 관리자') + '</button>' +
         '</div></div>' +
         (state.showAdminPinPrompt && !state.isAdminUnlocked
-          ? '<div style="display:flex;gap:6px;margin-bottom:8px;"><input id="pinInp" type="password" inputmode="numeric" value="' + state.adminPinInput + '" placeholder="관리자 PIN (1234)" style="' + inputStyle + 'height:36px;flex:1;" /><button type="button" data-act="pinOk" style="height:36px;padding:0 12px;border-radius:8px;border:none;background:#fbbf24;color:#060a13;font-size:12px;font-weight:900;cursor:pointer;">확인</button></div>'
+          ? '<div style="display:flex;gap:6px;margin-bottom:8px;"><input id="pinInp" type="password" inputmode="numeric" value="' + state.adminPinInput + '" placeholder="관리자 PIN 입력" style="' + inputStyle + 'height:36px;flex:1;" /><button type="button" data-act="pinOk" style="height:36px;padding:0 12px;border-radius:8px;border:none;background:#fbbf24;color:#060a13;font-size:12px;font-weight:900;cursor:pointer;">확인</button></div>'
           : '') +
         '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">' +
         (att.length ? att.map(n => '<span style="padding:3px 9px;border-radius:999px;background:rgba(16,185,129,0.18);color:#a7f3d0;border:1px solid #34d399;font-size:11px;font-weight:800;">' + n + '</span>').join('') : '<span style="font-size:11px;color:#64748b;">참석 멤버를 터치하세요.</span>') +
@@ -624,7 +662,9 @@
         el.onclick = () => {
           const act = el.getAttribute('data-act');
           const name = el.getAttribute('data-name');
-          if (act === 'toggle') {
+          if (act === 'shareApp') {
+            shareAppLink();
+          } else if (act === 'toggle') {
             if (state.guestMembers.includes(name)) state.guestMembers = state.guestMembers.filter(g => g !== name);
             else if (state.selectedMembers.includes(name)) state.selectedMembers = state.selectedMembers.filter(m => m !== name);
             else state.selectedMembers = [...state.selectedMembers, name];
