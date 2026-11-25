@@ -1,0 +1,1230 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>홀덤 맨징 계산기</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Pretendard & Inter Font -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'Inter', 'Noto Sans KR', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-[#0f172a] text-slate-100 font-sans antialiased min-h-screen selection:bg-emerald-500/30 selection:text-emerald-200">
+
+  <!-- 메인 앱 컨테이너 -->
+  <div class="max-w-[560px] mx-auto px-4 pt-6 pb-24">
+
+    <!-- 상단 헤더 -->
+    <header class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-950/60 border border-emerald-400/30 shrink-0">
+          <!-- 스페이드 아이콘 -->
+          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C9 6.5 4 9.5 4 14a4.5 4.5 0 0 0 7.2 3.6c-.2 1.4-.9 2.6-2.2 3.4h6c-1.3-.8-2-2-2.2-3.4A4.5 4.5 0 0 0 20 14c0-4.5-5-7.5-8-12z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">홀덤 맨징 계산기</h1>
+          <p class="text-xs sm:text-sm text-slate-400 font-medium">손실 비율별 자동 정산 · 100원 단위 반올림</p>
+        </div>
+      </div>
+      <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30 shrink-0">
+        100원 반올림
+      </span>
+    </header>
+
+    <!-- 1. 총 맨징 금액 입력 카드 -->
+    <section class="bg-[#1e293b] border border-slate-700/80 rounded-2xl p-5 mb-5 shadow-xl shadow-black/30">
+      <div class="flex items-center justify-between mb-2.5">
+        <label for="totalPoolInput" class="text-sm font-bold text-slate-200 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          총 맨징 금액 (배분할 상금)
+        </label>
+        <span class="text-xs text-slate-400">원 단위 입력</span>
+      </div>
+
+      <div class="relative flex items-center">
+        <input
+          id="totalPoolInput"
+          type="text"
+          inputmode="numeric"
+          placeholder="0"
+          autocomplete="off"
+          class="w-full bg-[#0f172a] border-2 border-slate-700 focus:border-amber-400 focus:outline-none rounded-xl pl-4 pr-12 py-3.5 text-right text-2xl sm:text-3xl font-extrabold text-amber-400 placeholder-slate-600 transition-colors"
+        />
+        <span class="absolute right-4 text-lg font-bold text-slate-400 pointer-events-none">원</span>
+      </div>
+
+      <!-- 빠른 금액 추가 버튼 -->
+      <div class="grid grid-cols-4 gap-2 mt-3.5">
+        <button
+          type="button"
+          onclick="addPoolAmount(10000)"
+          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-600/80 text-slate-100 font-bold text-sm transition-all flex items-center justify-center"
+        >
+          +1만
+        </button>
+        <button
+          type="button"
+          onclick="addPoolAmount(50000)"
+          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-600/80 text-slate-100 font-bold text-sm transition-all flex items-center justify-center"
+        >
+          +5만
+        </button>
+        <button
+          type="button"
+          onclick="addPoolAmount(100000)"
+          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-[0.97] border border-slate-600/80 text-slate-100 font-bold text-sm transition-all flex items-center justify-center"
+        >
+          +10만
+        </button>
+        <button
+          type="button"
+          onclick="clearPoolAmount()"
+          class="min-h-[48px] rounded-xl bg-rose-500/15 hover:bg-rose-500/25 active:scale-[0.97] border border-rose-500/30 text-rose-300 font-bold text-sm transition-all flex items-center justify-center"
+        >
+          초기화
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. 참여 플레이어 및 손실 금액 입력 섹션 -->
+    <section class="mb-5">
+      <div class="flex items-center justify-between mb-3 px-1">
+        <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          참여 플레이어 &amp; 마이너스 금액
+          <span id="playerCountBadge" class="ml-1 px-2.5 py-0.5 text-xs font-bold rounded-full bg-[#1e293b] text-emerald-400 border border-slate-700">3명</span>
+        </h2>
+        <span class="text-xs text-slate-400">입력 시 즉시 계산</span>
+      </div>
+
+      <!-- 플레이어 카드 리스트 -->
+      <div id="playerList" class="space-y-3"></div>
+
+      <!-- 플레이어 추가 버튼 -->
+      <button
+        type="button"
+        id="addPlayerBtn"
+        class="mt-3.5 w-full min-h-[54px] rounded-2xl bg-[#1e293b] hover:bg-slate-800 active:scale-[0.99] border-2 border-dashed border-slate-600 hover:border-emerald-400 text-emerald-400 font-bold text-base transition-all flex items-center justify-center gap-2 shadow-md"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        플레이어 추가
+      </button>
+    </section>
+
+    <!-- 3. 정산 요약 카드 -->
+    <section class="bg-[#1e293b] border border-slate-700/80 rounded-2xl p-5 mb-5 shadow-xl shadow-black/30">
+      <h2 class="text-sm font-bold text-slate-300 mb-3.5 flex items-center gap-2">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        정산 요약
+      </h2>
+
+      <div class="grid grid-cols-3 gap-2.5">
+        <!-- 총 마이너스 금액 -->
+        <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-3">
+          <p class="text-[11px] font-medium text-slate-400 mb-1">총 마이너스</p>
+          <p id="totalLossDisplay" class="text-sm sm:text-base font-extrabold text-rose-400 tracking-tight truncate">0원</p>
+        </div>
+
+        <!-- 총 맨징 금액 -->
+        <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-3">
+          <p class="text-[11px] font-medium text-slate-400 mb-1">총 맨징 금액</p>
+          <p id="totalPoolDisplay" class="text-sm sm:text-base font-extrabold text-amber-400 tracking-tight truncate">0원</p>
+        </div>
+
+        <!-- 실제 배분 합계 -->
+        <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-3">
+          <p class="text-[11px] font-medium text-slate-400 mb-1">실제 배분 합계</p>
+          <p id="totalPayoutDisplay" class="text-sm sm:text-base font-extrabold text-emerald-400 tracking-tight truncate">0원</p>
+        </div>
+      </div>
+
+      <!-- 100원 단위 반올림 차액 알림 배지 -->
+      <div id="roundingDiffBox" class="hidden mt-3 px-3.5 py-2.5 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 text-xs sm:text-sm font-semibold text-amber-300">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="roundingDiffText">100원 단위 반올림 차액: 0원</span>
+        </div>
+        <span class="text-[11px] text-amber-200/70 shrink-0">배분합 - 총액</span>
+      </div>
+    </section>
+
+    <!-- 4. 하단 메인 액션 버튼 -->
+    <section class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <!-- 텍스트 복사 버튼 -->
+        <button
+          type="button"
+          id="copyResultBtn"
+          class="min-h-[58px] rounded-2xl bg-[#1e293b] hover:bg-slate-700/90 active:scale-[0.98] border-2 border-emerald-500/60 hover:border-emerald-400 text-emerald-300 font-extrabold text-base shadow-lg shadow-black/30 transition-all flex items-center justify-center gap-2 px-3"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+          </svg>
+          <span>텍스트 복사</span>
+        </button>
+
+        <!-- 이미지로 저장 버튼 -->
+        <button
+          type="button"
+          id="saveImageBtn"
+          class="min-h-[58px] rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-extrabold text-base shadow-lg shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 px-3"
+        >
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>이미지로 저장</span>
+        </button>
+      </div>
+
+      <!-- 전체 초기화 버튼 -->
+      <button
+        type="button"
+        id="resetAllBtn"
+        class="w-full min-h-[50px] rounded-2xl bg-[#1e293b]/80 hover:bg-rose-500/20 active:scale-[0.99] border border-slate-700 hover:border-rose-500/40 text-slate-300 hover:text-rose-300 font-bold text-sm transition-all flex items-center justify-center gap-2"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        전체 초기화
+      </button>
+    </section>
+
+  </div>
+
+  <!-- 커스텀 초기화 확인 모달 -->
+  <div id="resetModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+    <div class="bg-[#1e293b] border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+      <h3 class="text-lg font-extrabold text-white mb-2">전체 초기화할까요?</h3>
+      <p class="text-sm text-slate-300 mb-6">입력한 총 맨징 금액과 모든 플레이어의 손실 금액이 처음 상태로 돌아갑니다.</p>
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          id="cancelResetBtn"
+          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-sm transition-colors"
+        >
+          취소
+        </button>
+        <button
+          type="button"
+          id="confirmResetBtn"
+          class="min-h-[48px] rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-sm transition-colors"
+        >
+          초기화 실행
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 수동 복사 폴백 모달 (자동 복사가 브라우저 보안으로 차단될 경우 표시) -->
+  <div id="manualCopyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm px-4">
+    <div class="bg-[#1e293b] border border-emerald-500/40 rounded-2xl p-5 w-full max-w-md shadow-2xl">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-lg font-extrabold text-emerald-400 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          카톡 공유용 결과 텍스트
+        </h3>
+        <button
+          type="button"
+          id="closeManualModalX"
+          aria-label="닫기"
+          class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <p class="text-xs text-slate-300 mb-3">
+        미리보기 환경의 보안 제한으로 자동 복사가 차단되었습니다. 아래 텍스트를 길게 누르거나 <strong class="text-amber-300">Ctrl+C / Cmd+C</strong>로 복사해 주세요.
+      </p>
+      <textarea
+        id="manualCopyTextarea"
+        readonly
+        rows="10"
+        class="w-full bg-[#0f172a] border border-slate-600 focus:border-emerald-400 focus:outline-none rounded-xl p-3.5 text-sm text-slate-100 font-mono leading-relaxed resize-none mb-4"
+      ></textarea>
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          id="selectAllManualBtn"
+          class="min-h-[48px] rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition-colors"
+        >
+          텍스트 전체 선택
+        </button>
+        <button
+          type="button"
+          id="closeManualModalBtn"
+          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-sm transition-colors"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 정산서 이미지 미리보기 및 저장 모달 -->
+  <div id="imagePreviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 py-6 overflow-y-auto">
+    <div class="bg-[#1e293b] border border-slate-700 rounded-2xl p-5 w-full max-w-md shadow-2xl my-auto">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-extrabold text-white flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          정산서 이미지 미리보기
+        </h3>
+        <button
+          type="button"
+          id="closeImageModalX"
+          aria-label="닫기"
+          class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 생성된 고화질 PNG 이미지 영역 -->
+      <div class="bg-[#0f172a] border border-slate-700/80 rounded-xl p-2 mb-3 max-h-[60vh] overflow-y-auto">
+        <img
+          id="generatedImagePreview"
+          src=""
+          alt="홀덤 맨징 정산서"
+          class="w-full h-auto rounded-lg shadow-lg block"
+        />
+      </div>
+
+      <p class="text-xs text-amber-300/90 bg-amber-400/10 border border-amber-400/25 rounded-xl px-3 py-2.5 mb-4 leading-relaxed">
+        💡 모바일이나 미리보기에서는 위 이미지를 <strong>길게 눌러</strong> 바로 저장하거나 카톡으로 공유할 수 있어요.
+      </p>
+
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          type="button"
+          id="downloadImageAgainBtn"
+          class="min-h-[48px] rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-extrabold text-sm transition-all flex items-center justify-center gap-1.5"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          PNG 다운로드
+        </button>
+        <button
+          type="button"
+          id="closeImageModalBtn"
+          class="min-h-[48px] rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-sm transition-colors"
+        >
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 메시지 -->
+  <div
+    id="toast"
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3.5 rounded-2xl bg-slate-900/95 border border-emerald-400/50 text-emerald-300 font-bold text-sm shadow-2xl flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300 translate-y-3 whitespace-nowrap"
+  >
+    <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+    <span id="toastMessage">카톡 공유용 결과가 복사되었습니다!</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 상태 관리 (State)
+    // =========================================================================
+    let totalPool = 0; // 총 맨징 금액
+    let nextPlayerId = 1;
+    let players = []; // { id, name, loss }
+    let toastTimer = null;
+
+    // DOM 요소 참조
+    const totalPoolInput = document.getElementById('totalPoolInput');
+    const playerListEl = document.getElementById('playerList');
+    const playerCountBadge = document.getElementById('playerCountBadge');
+    const totalLossDisplay = document.getElementById('totalLossDisplay');
+    const totalPoolDisplay = document.getElementById('totalPoolDisplay');
+    const totalPayoutDisplay = document.getElementById('totalPayoutDisplay');
+    const roundingDiffBox = document.getElementById('roundingDiffBox');
+    const roundingDiffText = document.getElementById('roundingDiffText');
+    const addPlayerBtn = document.getElementById('addPlayerBtn');
+    const copyResultBtn = document.getElementById('copyResultBtn');
+    const saveImageBtn = document.getElementById('saveImageBtn');
+    const resetAllBtn = document.getElementById('resetAllBtn');
+
+    // 모달 요소
+    const resetModal = document.getElementById('resetModal');
+    const cancelResetBtn = document.getElementById('cancelResetBtn');
+    const confirmResetBtn = document.getElementById('confirmResetBtn');
+    const manualCopyModal = document.getElementById('manualCopyModal');
+    const manualCopyTextarea = document.getElementById('manualCopyTextarea');
+    const selectAllManualBtn = document.getElementById('selectAllManualBtn');
+    const closeManualModalBtn = document.getElementById('closeManualModalBtn');
+    const closeManualModalX = document.getElementById('closeManualModalX');
+
+    // 이미지 미리보기 모달 요소
+    const imagePreviewModal = document.getElementById('imagePreviewModal');
+    const generatedImagePreview = document.getElementById('generatedImagePreview');
+    const downloadImageAgainBtn = document.getElementById('downloadImageAgainBtn');
+    const closeImageModalBtn = document.getElementById('closeImageModalBtn');
+    const closeImageModalX = document.getElementById('closeImageModalX');
+    let lastGeneratedImageUrl = '';
+    let lastGeneratedFilename = '홀덤_맨징정산.png';
+
+    // 토스트 요소
+    const toastEl = document.getElementById('toast');
+    const toastMessageEl = document.getElementById('toastMessage');
+
+    // =========================================================================
+    // 유틸리티 함수
+    // =========================================================================
+
+    function parseAmount(value) {
+      if (!value) return 0;
+      const digitsOnly = String(value).replace(/[^0-9]/g, '');
+      const parsed = parseInt(digitsOnly, 10);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString('ko-KR');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(message) {
+      toastMessageEl.textContent = message;
+      toastEl.classList.remove('opacity-0', 'translate-y-3', 'pointer-events-none');
+      toastEl.classList.add('opacity-100', 'translate-y-0');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.classList.add('opacity-0', 'translate-y-3', 'pointer-events-none');
+        toastEl.classList.remove('opacity-100', 'translate-y-0');
+      }, 2500);
+    }
+
+    // =========================================================================
+    // 핵심 계산 로직
+    // =========================================================================
+
+    function calculateSettlement() {
+      const totalLoss = players.reduce((sum, p) => sum + p.loss, 0);
+      let totalPayout = 0;
+
+      const results = players.map((p, idx) => {
+        let ratio = 0;
+        let payout = 0;
+
+        if (totalLoss > 0 && p.loss > 0) {
+          ratio = (p.loss / totalLoss) * 100;
+          if (totalPool > 0) {
+            const rawPayout = totalPool * (p.loss / totalLoss);
+            // 100원 단위 반올림
+            payout = Math.round(rawPayout / 100) * 100;
+          }
+        }
+
+        totalPayout += payout;
+        const netLoss = p.loss - payout; // 최종 실손실
+
+        return {
+          id: p.id,
+          displayName: p.name.trim() || `플레이어 ${idx + 1}`,
+          loss: p.loss,
+          ratio,
+          payout,
+          netLoss,
+        };
+      });
+
+      const diff = totalPool > 0 && totalLoss > 0 ? totalPayout - totalPool : 0;
+
+      return { totalLoss, totalPayout, diff, results };
+    }
+
+    function updateCalculationsUI() {
+      const { totalLoss, totalPayout, diff, results } = calculateSettlement();
+
+      // 각 플레이어 카드 결과 업데이트
+      results.forEach((res) => {
+        const payoutEl = document.getElementById(`payout-${res.id}`);
+        const ratioEl = document.getElementById(`ratio-${res.id}`);
+        const netLossEl = document.getElementById(`netloss-${res.id}`);
+
+        if (payoutEl) {
+          payoutEl.textContent = res.payout > 0 ? `+${formatNumber(res.payout)}원` : '0원';
+          if (res.payout > 0) {
+            payoutEl.classList.remove('text-slate-500');
+            payoutEl.classList.add('text-emerald-400');
+          } else {
+            payoutEl.classList.remove('text-emerald-400');
+            payoutEl.classList.add('text-slate-500');
+          }
+        }
+
+        if (ratioEl) {
+          ratioEl.textContent = `${res.ratio.toFixed(1)}%`;
+          if (res.ratio > 0) {
+            ratioEl.classList.remove('bg-slate-700/60', 'text-slate-400', 'border-slate-600/50');
+            ratioEl.classList.add('bg-amber-400/20', 'text-amber-300', 'border-amber-400/40');
+          } else {
+            ratioEl.classList.remove('bg-amber-400/20', 'text-amber-300', 'border-amber-400/40');
+            ratioEl.classList.add('bg-slate-700/60', 'text-slate-400', 'border-slate-600/50');
+          }
+        }
+
+        if (netLossEl) {
+          if (res.loss === 0) {
+            netLossEl.textContent = '0원';
+            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-slate-500 tracking-tight mt-1 truncate';
+          } else if (res.netLoss > 0) {
+            netLossEl.textContent = `-${formatNumber(res.netLoss)}원`;
+            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-rose-300 tracking-tight mt-1 truncate';
+          } else if (res.netLoss === 0) {
+            netLossEl.textContent = '본전 (0원)';
+            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-emerald-300 tracking-tight mt-1 truncate';
+          } else {
+            netLossEl.textContent = `+${formatNumber(Math.abs(res.netLoss))}원`;
+            netLossEl.className = 'text-xl sm:text-[22px] font-extrabold tabular-nums text-amber-300 tracking-tight mt-1 truncate';
+          }
+        }
+      });
+
+      // 정산 요약 영역 업데이트
+      totalLossDisplay.textContent = totalLoss > 0 ? `-${formatNumber(totalLoss)}원` : '0원';
+      totalPoolDisplay.textContent = `${formatNumber(totalPool)}원`;
+      totalPayoutDisplay.textContent = `${formatNumber(totalPayout)}원`;
+      playerCountBadge.textContent = `${players.length}명`;
+
+      // 반올림 차액 알림
+      if (diff !== 0) {
+        const sign = diff > 0 ? '+' : '-';
+        roundingDiffText.textContent = `100원 단위 반올림 차액: ${sign}${formatNumber(Math.abs(diff))}원`;
+        roundingDiffBox.classList.remove('hidden');
+      } else {
+        roundingDiffBox.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 플레이어 카드 렌더링 및 관리
+    // =========================================================================
+
+    function renderPlayers() {
+      playerListEl.innerHTML = '';
+
+      players.forEach((player, index) => {
+        const card = document.createElement('div');
+        card.className = 'bg-[#1e293b] border border-slate-700/80 rounded-2xl p-4 shadow-md transition-all';
+        card.dataset.id = player.id;
+
+        card.innerHTML = `
+          <!-- 상단: 번호 + 이름 입력 + 삭제 버튼 -->
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+              <span class="w-7 h-7 rounded-lg bg-[#0f172a] border border-slate-700 text-slate-300 font-extrabold text-xs flex items-center justify-center shrink-0">
+                ${index + 1}
+              </span>
+              <input
+                type="text"
+                value="${escapeHtml(player.name)}"
+                placeholder="플레이어 ${index + 1}"
+                data-role="name"
+                data-id="${player.id}"
+                class="w-full bg-transparent border-b border-transparent hover:border-slate-600 focus:border-emerald-400 focus:outline-none py-1 text-base font-bold text-white placeholder-slate-500 transition-colors"
+              />
+            </div>
+            <button
+              type="button"
+              onclick="removePlayer(${player.id})"
+              aria-label="플레이어 삭제"
+              class="w-9 h-9 rounded-xl bg-[#0f172a] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/40 flex items-center justify-center transition-colors shrink-0"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- 중단: 마이너스 금액 입력 (넉넉한 전체 폭) -->
+          <div class="mb-3">
+            <div class="flex items-center justify-between mb-1 px-1">
+              <label class="text-xs font-semibold text-slate-400">마이너스 금액</label>
+              <span class="text-[11px] text-slate-500">잃은 금액 입력</span>
+            </div>
+            <div class="relative flex items-center">
+              <span class="absolute left-3.5 text-base font-extrabold text-rose-400 pointer-events-none">-</span>
+              <input
+                type="text"
+                inputmode="numeric"
+                value="${player.loss > 0 ? formatNumber(player.loss) : ''}"
+                placeholder="0"
+                data-role="loss"
+                data-id="${player.id}"
+                autocomplete="off"
+                class="w-full bg-[#0f172a] border border-slate-700 focus:border-rose-400 focus:outline-none rounded-xl pl-8 pr-10 py-3 text-right text-lg sm:text-xl font-extrabold tabular-nums text-rose-300 placeholder-slate-600 transition-colors"
+              />
+              <span class="absolute right-3.5 text-sm font-bold text-slate-500 pointer-events-none">원</span>
+            </div>
+          </div>
+
+          <!-- 하단: 맨징 금액 & 최종 실손실 (동일 비중 2열 대칭 결과 박스) -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <!-- 좌측: 맨징 금액 + 비율 % -->
+            <div class="bg-[#0f172a] border border-emerald-500/25 rounded-xl px-3.5 py-3 flex flex-col justify-between">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-bold text-slate-300">맨징 금액</span>
+                <span
+                  id="ratio-${player.id}"
+                  class="px-2 py-0.5 rounded-md text-[11px] font-extrabold tabular-nums border bg-slate-700/60 text-slate-400 border-slate-600/50 shrink-0"
+                >
+                  0.0%
+                </span>
+              </div>
+              <div id="payout-${player.id}" class="text-xl sm:text-[22px] font-extrabold tabular-nums text-slate-500 tracking-tight mt-1 truncate">
+                0원
+              </div>
+            </div>
+
+            <!-- 우측: 최종 실손실 -->
+            <div class="bg-[#0f172a] border border-rose-400/25 rounded-xl px-3.5 py-3 flex flex-col justify-between">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-xs font-bold text-slate-300">최종 실손실</span>
+                <span class="text-[10px] font-semibold text-slate-500 shrink-0">정산 후</span>
+              </div>
+              <div id="netloss-${player.id}" class="text-xl sm:text-[22px] font-extrabold tabular-nums text-slate-500 tracking-tight mt-1 truncate">
+                0원
+              </div>
+            </div>
+          </div>
+        `;
+
+        playerListEl.appendChild(card);
+      });
+
+      // 입력 이벤트 바인딩
+      playerListEl.querySelectorAll('input[data-role="name"]').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          const id = Number(e.target.dataset.id);
+          const target = players.find((p) => p.id === id);
+          if (target) target.name = e.target.value;
+        });
+      });
+
+      playerListEl.querySelectorAll('input[data-role="loss"]').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          const id = Number(e.target.dataset.id);
+          const amount = parseAmount(e.target.value);
+          const target = players.find((p) => p.id === id);
+          if (target) {
+            target.loss = amount;
+            e.target.value = amount > 0 ? formatNumber(amount) : '';
+            updateCalculationsUI();
+          }
+        });
+      });
+
+      updateCalculationsUI();
+    }
+
+    function addPlayer(focusNew = true) {
+      const newId = nextPlayerId++;
+      players.push({ id: newId, name: '', loss: 0 });
+      renderPlayers();
+
+      if (focusNew) {
+        const newInput = playerListEl.querySelector(`input[data-role="name"][data-id="${newId}"]`);
+        if (newInput) newInput.focus();
+      }
+    }
+
+    function removePlayer(id) {
+      if (players.length <= 1) {
+        players[0].name = '';
+        players[0].loss = 0;
+        renderPlayers();
+        showToast('최소 1명의 플레이어가 필요합니다. 내용만 비웠습니다.');
+        return;
+      }
+      players = players.filter((p) => p.id !== id);
+      renderPlayers();
+    }
+
+    // =========================================================================
+    // 총 맨징 금액 컨트롤
+    // =========================================================================
+
+    function addPoolAmount(amount) {
+      totalPool += amount;
+      totalPoolInput.value = totalPool > 0 ? formatNumber(totalPool) : '';
+      updateCalculationsUI();
+    }
+
+    function clearPoolAmount() {
+      totalPool = 0;
+      totalPoolInput.value = '';
+      updateCalculationsUI();
+    }
+
+    totalPoolInput.addEventListener('input', (e) => {
+      totalPool = parseAmount(e.target.value);
+      e.target.value = totalPool > 0 ? formatNumber(totalPool) : '';
+      updateCalculationsUI();
+    });
+
+    // =========================================================================
+    // 3단계 안전 복사 핸들러 (카톡 공유용)
+    // =========================================================================
+
+    function buildKakaoSummaryText() {
+      const { totalLoss, totalPayout, diff, results } = calculateSettlement();
+      const activePlayers = results.filter((r) => r.loss > 0 || r.payout > 0);
+      const targetList = activePlayers.length > 0 ? activePlayers : results;
+
+      const lines = [];
+      lines.push('♠️ [홀덤 맨징 정산 결과] ♠️');
+      lines.push(`• 총 맨징 금액: ${formatNumber(totalPool)}원`);
+      lines.push(`• 총 마이너스 금액: -${formatNumber(totalLoss)}원`);
+      lines.push('---------------------------');
+
+      targetList.forEach((p, idx) => {
+        let netText = '본전 (0원)';
+        if (p.netLoss > 0) netText = `-${formatNumber(p.netLoss)}원`;
+        else if (p.netLoss < 0) netText = `+${formatNumber(Math.abs(p.netLoss))}원`;
+
+        lines.push(`${idx + 1}. ${p.displayName}`);
+        lines.push(`   • 손실: -${formatNumber(p.loss)}원 (${p.ratio.toFixed(1)}%)`);
+        lines.push(`   • 맨징: +${formatNumber(p.payout)}원`);
+        lines.push(`   • 최종 실손실: ${netText}`);
+      });
+
+      lines.push('---------------------------');
+      lines.push(`• 실제 배분 합계: ${formatNumber(totalPayout)}원`);
+      if (diff !== 0) {
+        const sign = diff > 0 ? '+' : '-';
+        lines.push(`※ 100원 반올림 차액: ${sign}${formatNumber(Math.abs(diff))}원`);
+      }
+
+      return lines.join('\n');
+    }
+
+    function openManualCopyModal(text) {
+      manualCopyTextarea.value = text;
+      manualCopyModal.classList.remove('hidden');
+      manualCopyModal.classList.add('flex');
+      setTimeout(() => {
+        manualCopyTextarea.focus();
+        manualCopyTextarea.select();
+      }, 50);
+    }
+
+    function closeManualCopyModal() {
+      manualCopyModal.classList.add('hidden');
+      manualCopyModal.classList.remove('flex');
+    }
+
+    /**
+     * 1단계: navigator.clipboard.writeText 시도
+     * 2단계: 실패 시 임시 textarea + document.execCommand('copy') 폴백
+     * 3단계: 둘 다 차단되면 수동 복사 모달 오픈 (텍스트 자동 선택)
+     */
+    async function copySettlementResult() {
+      const { totalLoss } = calculateSettlement();
+      if (totalPool === 0 && totalLoss === 0) {
+        showToast('먼저 총 맨징 금액과 마이너스 금액을 입력해 주세요!');
+        return;
+      }
+
+      const textToCopy = buildKakaoSummaryText();
+      let copied = false;
+
+      // [1단계] Clipboard API 시도
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          copied = true;
+        } catch (err) {
+          copied = false;
+        }
+      }
+
+      // [2단계] execCommand('copy') 폴백 시도
+      if (!copied) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = textToCopy;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.top = '0';
+          textarea.style.left = '0';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          textarea.setSelectionRange(0, textToCopy.length);
+          copied = document.execCommand('copy');
+          document.body.removeChild(textarea);
+        } catch (err) {
+          copied = false;
+        }
+      }
+
+      // [결과 처리] 성공 시 토스트 알림, 실패 시 3단계 수동 복사 모달 표시
+      if (copied) {
+        showToast('카톡 공유용 결과가 복사되었습니다!');
+      } else {
+        openManualCopyModal(textToCopy);
+      }
+    }
+
+    // =========================================================================
+    // 네이티브 HTML5 Canvas 고화질(2x) 정산서 이미지 생성 및 다운로드
+    // =========================================================================
+
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + width, y, x + width, y + height, r);
+      ctx.arcTo(x + width, y + height, x, y + height, r);
+      ctx.arcTo(x, y + height, x, y, r);
+      ctx.arcTo(x, y, x + width, y, r);
+      ctx.closePath();
+    }
+
+    function getFormattedDateTime() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      return {
+        display: `${yyyy}.${mm}.${dd} ${hh}:${min}`,
+        fileDate: `${yyyy}${mm}${dd}`,
+      };
+    }
+
+    function triggerPngDownload(dataUrl, filename) {
+      try {
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        // 샌드박스 환경에서 다운로드가 제한되어도 미리보기 모달로 저장 가능
+      }
+    }
+
+    function openImagePreviewModal(dataUrl, filename) {
+      lastGeneratedImageUrl = dataUrl;
+      lastGeneratedFilename = filename;
+      generatedImagePreview.src = dataUrl;
+      imagePreviewModal.classList.remove('hidden');
+      imagePreviewModal.classList.add('flex');
+    }
+
+    function closeImagePreviewModal() {
+      imagePreviewModal.classList.add('hidden');
+      imagePreviewModal.classList.remove('flex');
+    }
+
+    function generateSettlementImage() {
+      const { totalLoss, totalPayout, diff, results } = calculateSettlement();
+      if (totalPool === 0 && totalLoss === 0) {
+        showToast('먼저 총 맨징 금액과 마이너스 금액을 입력해 주세요!');
+        return;
+      }
+
+      const activePlayers = results.filter((r) => r.loss > 0 || r.payout > 0);
+      const targetList = activePlayers.length > 0 ? activePlayers : results;
+      const { display: dateText, fileDate } = getFormattedDateTime();
+
+      // 캔버스 레이아웃 치수 계산 (2x Retina)
+      const scale = 2;
+      const width = 720;
+      const padX = 36;
+      const contentW = width - padX * 2;
+      const headerH = 110;
+      const summaryH = diff !== 0 ? 182 : 134;
+      const sectionLabelH = 44;
+      const cardH = 132;
+      const cardGap = 14;
+      const playersBlockH = targetList.length * cardH + Math.max(0, targetList.length - 1) * cardGap;
+      const footerH = 64;
+      const height = headerH + summaryH + sectionLabelH + playersBlockH + footerH + 36;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(scale, scale);
+
+      const fontFamily = '"Pretendard", "Noto Sans KR", "Inter", -apple-system, BlinkMacSystemFont, sans-serif';
+
+      // 1. 배경 (딥 슬레이트)
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, width, height);
+
+      // 상단 포인트 그라데이션 바
+      const topBarGrad = ctx.createLinearGradient(0, 0, width, 0);
+      topBarGrad.addColorStop(0, '#10b981');
+      topBarGrad.addColorStop(0.55, '#14b8a6');
+      topBarGrad.addColorStop(1, '#fbbf24');
+      ctx.fillStyle = topBarGrad;
+      ctx.fillRect(0, 0, width, 8);
+
+      // 2. 헤더 영역
+      let y = 42;
+      // 스페이드 배지
+      drawRoundedRect(ctx, padX, y, 52, 52, 14);
+      const badgeGrad = ctx.createLinearGradient(padX, y, padX + 52, y + 52);
+      badgeGrad.addColorStop(0, '#10b981');
+      badgeGrad.addColorStop(1, '#0d9488');
+      ctx.fillStyle = badgeGrad;
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `800 26px ${fontFamily}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('♠', padX + 26, y + 27);
+
+      // 타이틀 & 날짜
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `800 28px ${fontFamily}`;
+      ctx.fillText('홀덤 맨징 정산서', padX + 68, y + 2);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = `500 15px ${fontFamily}`;
+      ctx.fillText(`손실 비율별 자동 정산 · 100원 단위 반올림`, padX + 68, y + 36);
+
+      // 우측 날짜 표시
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = `600 15px ${fontFamily}`;
+      ctx.fillText(dateText, width - padX, y + 10);
+
+      // 100원 반올림 배지
+      drawRoundedRect(ctx, width - padX - 104, y + 33, 104, 26, 13);
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.14)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#fcd34d';
+      ctx.font = `700 12px ${fontFamily}`;
+      ctx.fillText('100원 반올림', width - padX - 52, y + 46);
+
+      // 3. 정산 요약 카드
+      y = headerH + 14;
+      drawRoundedRect(ctx, padX, y, contentW, summaryH, 20);
+      ctx.fillStyle = '#1e293b';
+      ctx.fill();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      const boxGap = 12;
+      const boxW = (contentW - 36 - boxGap * 2) / 3;
+      const boxY = y + 18;
+      const boxH = 98;
+      const summaryItems = [
+        { label: '총 마이너스', value: totalLoss > 0 ? `-${formatNumber(totalLoss)}원` : '0원', color: '#fb7185' },
+        { label: '총 맨징 금액', value: `${formatNumber(totalPool)}원`, color: '#fbbf24' },
+        { label: '실제 배분 합계', value: `${formatNumber(totalPayout)}원`, color: '#34d399' },
+      ];
+
+      summaryItems.forEach((item, idx) => {
+        const bx = padX + 18 + idx * (boxW + boxGap);
+        drawRoundedRect(ctx, bx, boxY, boxW, boxH, 14);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `600 14px ${fontFamily}`;
+        ctx.fillText(item.label, bx + 16, boxY + 18);
+
+        ctx.fillStyle = item.color;
+        ctx.font = `800 22px ${fontFamily}`;
+        ctx.fillText(item.value, bx + 16, boxY + 50);
+      });
+
+      // 반올림 차액 알림 배지 (차액이 있을 때만)
+      if (diff !== 0) {
+        const diffY = boxY + boxH + 14;
+        drawRoundedRect(ctx, padX + 18, diffY, contentW - 36, 38, 10);
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        const sign = diff > 0 ? '+' : '-';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#fcd34d';
+        ctx.font = `700 14px ${fontFamily}`;
+        ctx.fillText(`※ 100원 단위 반올림 차액: ${sign}${formatNumber(Math.abs(diff))}원 (배분합 - 총액)`, padX + 32, diffY + 19);
+      }
+
+      // 4. 플레이어별 정산 내역 섹션 헤더
+      y += summaryH + 26;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `800 18px ${fontFamily}`;
+      ctx.fillText(`플레이어별 정산 내역 (${targetList.length}명)`, padX + 4, y + 6);
+
+      // 5. 플레이어 카드 리스트
+      y += 28;
+      targetList.forEach((p, idx) => {
+        // 카드 배경
+        drawRoundedRect(ctx, padX, y, contentW, cardH, 18);
+        ctx.fillStyle = '#1e293b';
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // 상단 행: 순번 배지 + 이름 + (우측) 손실 금액 & 비율 %
+        drawRoundedRect(ctx, padX + 18, y + 15, 28, 28, 8);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = `800 13px ${fontFamily}`;
+        ctx.fillText(String(idx + 1), padX + 32, y + 29);
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `800 19px ${fontFamily}`;
+        ctx.fillText(p.displayName, padX + 56, y + 29);
+
+        // 우측 비율 배지
+        const ratioLabel = `${p.ratio.toFixed(1)}%`;
+        ctx.font = `800 13px ${fontFamily}`;
+        const pillW = Math.max(60, ctx.measureText(ratioLabel).width + 20);
+        const pillX = padX + contentW - 18 - pillW;
+        drawRoundedRect(ctx, pillX, y + 16, pillW, 26, 8);
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.18)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fcd34d';
+        ctx.fillText(ratioLabel, pillX + pillW / 2, y + 29);
+
+        // 비율 배지 좌측에 원래 마이너스 금액 표시
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `600 15px ${fontFamily}`;
+        ctx.fillText(`손실 -${formatNumber(p.loss)}원`, pillX - 12, y + 29);
+
+        // 하단 행: 균형 잡힌 2열 결과 박스 (맨징 금액 vs 최종 실손실)
+        const subY = y + 54;
+        const subH = 62;
+        const subW = (contentW - 36 - 12) / 2;
+
+        // 좌측: 맨징 금액 박스
+        drawRoundedRect(ctx, padX + 18, subY, subW, subH, 12);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `700 13px ${fontFamily}`;
+        ctx.fillText('맨징 금액', padX + 34, subY + 31);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#34d399';
+        ctx.font = `800 23px ${fontFamily}`;
+        ctx.fillText(`+${formatNumber(p.payout)}원`, padX + 18 + subW - 16, subY + 31);
+
+        // 우측: 최종 실손실 박스
+        const rightBoxX = padX + 18 + subW + 12;
+        drawRoundedRect(ctx, rightBoxX, subY, subW, subH, 12);
+        ctx.fillStyle = '#0f172a';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(251, 113, 133, 0.35)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = `700 13px ${fontFamily}`;
+        ctx.fillText('최종 실손실', rightBoxX + 16, subY + 31);
+
+        let netDisplay = '본전 (0원)';
+        let netColor = '#6ee7b7';
+        if (p.netLoss > 0) {
+          netDisplay = `-${formatNumber(p.netLoss)}원`;
+          netColor = '#fda4af';
+        } else if (p.netLoss < 0) {
+          netDisplay = `+${formatNumber(Math.abs(p.netLoss))}원`;
+          netColor = '#fcd34d';
+        }
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = netColor;
+        ctx.font = `800 23px ${fontFamily}`;
+        ctx.fillText(netDisplay, rightBoxX + subW - 16, subY + 31);
+
+        y += cardH + cardGap;
+      });
+
+      // 6. 하단 푸터
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#64748b';
+      ctx.font = `500 13px ${fontFamily}`;
+      ctx.fillText('홀덤 맨징 계산기 · 손실 비율별 자동 정산서', width / 2, height - 32);
+
+      // PNG 생성 -> 자동 다운로드 + 미리보기 모달 표시
+      const dataUrl = canvas.toDataURL('image/png');
+      const filename = `홀덤_맨징정산_${fileDate}.png`;
+
+      triggerPngDownload(dataUrl, filename);
+      openImagePreviewModal(dataUrl, filename);
+      showToast('정산서 이미지가 생성되었습니다!');
+    }
+
+    // =========================================================================
+    // 전체 초기화 모달 관리
+    // =========================================================================
+
+    function openResetModal() {
+      resetModal.classList.remove('hidden');
+      resetModal.classList.add('flex');
+    }
+
+    function closeResetModal() {
+      resetModal.classList.add('hidden');
+      resetModal.classList.remove('flex');
+    }
+
+    function resetAllData() {
+      totalPool = 0;
+      totalPoolInput.value = '';
+      nextPlayerId = 1;
+      players = [
+        { id: nextPlayerId++, name: '', loss: 0 },
+        { id: nextPlayerId++, name: '', loss: 0 },
+        { id: nextPlayerId++, name: '', loss: 0 },
+      ];
+      renderPlayers();
+      closeResetModal();
+      showToast('모든 항목이 초기화되었습니다.');
+    }
+
+    // 이벤트 리스너 연결
+    addPlayerBtn.addEventListener('click', () => addPlayer(true));
+    copyResultBtn.addEventListener('click', copySettlementResult);
+    saveImageBtn.addEventListener('click', generateSettlementImage);
+    resetAllBtn.addEventListener('click', openResetModal);
+    cancelResetBtn.addEventListener('click', closeResetModal);
+    confirmResetBtn.addEventListener('click', resetAllData);
+    resetModal.addEventListener('click', (e) => {
+      if (e.target === resetModal) closeResetModal();
+    });
+
+    downloadImageAgainBtn.addEventListener('click', () => {
+      if (lastGeneratedImageUrl) {
+        triggerPngDownload(lastGeneratedImageUrl, lastGeneratedFilename);
+        showToast('PNG 이미지 다운로드를 다시 시도했습니다!');
+      }
+    });
+    closeImageModalBtn.addEventListener('click', closeImagePreviewModal);
+    closeImageModalX.addEventListener('click', closeImagePreviewModal);
+    imagePreviewModal.addEventListener('click', (e) => {
+      if (e.target === imagePreviewModal) closeImagePreviewModal();
+    });
+
+    selectAllManualBtn.addEventListener('click', () => {
+      manualCopyTextarea.focus();
+      manualCopyTextarea.select();
+      try {
+        if (document.execCommand('copy')) {
+          showToast('카톡 공유용 결과가 복사되었습니다!');
+          closeManualCopyModal();
+        }
+      } catch (e) {
+        // 수동 복사 유지
+      }
+    });
+    closeManualModalBtn.addEventListener('click', closeManualCopyModal);
+    closeManualModalX.addEventListener('click', closeManualCopyModal);
+    manualCopyModal.addEventListener('click', (e) => {
+      if (e.target === manualCopyModal) closeManualCopyModal();
+    });
+
+    // =========================================================================
+    // 앱 초기화
+    // =========================================================================
+    function initApp() {
+      players = [
+        { id: nextPlayerId++, name: '', loss: 0 },
+        { id: nextPlayerId++, name: '', loss: 0 },
+        { id: nextPlayerId++, name: '', loss: 0 },
+      ];
+      renderPlayers();
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
+```
